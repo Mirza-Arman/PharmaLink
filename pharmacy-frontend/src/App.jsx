@@ -8,11 +8,13 @@ import SelectPharmacy from "./pages/SelectPharmacy";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
 import { AuthProvider } from "./AuthContext";
 
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+
           <Route path="/" element={<HomePage />} />
           <Route path="/buy-medicine" element={<BuyMedicine />} />
           <Route path="/customer-auth" element={<CustomerAuth />} />
