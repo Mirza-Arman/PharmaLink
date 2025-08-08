@@ -36,12 +36,12 @@ html, body {
 /* Header */
 .header {
   width: 100vw;
-  background: linear-gradient(90deg, #c9dddc 0%, #0d0e0e 100%);
-  color: #d12b2b;
+  background: linear-gradient(90deg, #2ca7a0 0%, #3bb2a9 100%);
+  color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 2rem;
+  padding: 1.2rem 2.5rem;
   position: sticky;
   top: 0;
   z-index: 10;
