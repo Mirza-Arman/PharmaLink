@@ -24,7 +24,7 @@ const Header = () => {
   const handleImageError = () => {
     setShowLetter(true);
   };
-  
+
   return (
     <header className="header">
       <div className="logo-area">PharmacyConnect</div>
@@ -39,18 +39,66 @@ const Header = () => {
           <Link to="/pharmacy-auth">Pharmacy Login/Signup</Link>
         </>}
         {customer && (
-          <>
-            <span className="user-info">{customer.email}</span>
-            <button className="logout-btn" onClick={logout}>Logout</button>
-          </>
+          <div className="customer-dropdown">
+            <div className="customer-avatar">
+              {gravatarUrl && !showLetter ? (
+                <img
+                  src={gravatarUrl}
+                  alt="Profile"
+                  className="avatar-image"
+                  onError={handleImageError}
+                />
+              ) : (
+                <div className="avatar-letter">
+                  {(customer.email || 'C').charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            <div className="dropdown-menu">
+              <div className="dropdown-header">
+                <div className="dropdown-header-content">
+                  <div className="dropdown-avatar">
+                    {gravatarUrl && !showLetter ? (
+                      <img
+                        src={gravatarUrl}
+                        alt="Profile"
+                        className="dropdown-avatar-image"
+                        onError={handleImageError}
+                      />
+                    ) : (
+                      <div className="dropdown-avatar-letter">
+                        {(customer.email || 'C').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="dropdown-info">
+                    <div className="dropdown-customer-name">
+                      {customer.fullName || customer.email}
+                    </div>
+                    <div className="dropdown-email">
+                      {customer.email}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="dropdown-divider"></div>
+              <button onClick={logout} className="dropdown-item logout-item">
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
         )}
+
         {pharmacy && (
           <div className="pharmacy-dropdown">
             <div className="pharmacy-avatar">
               {gravatarUrl && !showLetter ? (
-                <img 
-                  src={gravatarUrl} 
-                  alt="Profile" 
+                <img
+                  src={gravatarUrl}
+                  alt="Profile"
                   className="avatar-image"
                   onError={handleImageError}
                 />
@@ -65,9 +113,9 @@ const Header = () => {
                 <div className="dropdown-header-content">
                   <div className="dropdown-avatar">
                     {gravatarUrl && !showLetter ? (
-                      <img 
-                        src={gravatarUrl} 
-                        alt="Profile" 
+                      <img
+                        src={gravatarUrl}
+                        alt="Profile"
                         className="dropdown-avatar-image"
                         onError={handleImageError}
                       />
