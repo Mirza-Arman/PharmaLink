@@ -1,22 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Header from "../component/Header";
 import "./BuyMedicine.css";
 
 const initialMedicine = { name: "", quantity: 1 };
 const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar"];
 
-const Header = () => (
-  <header className="header">
-    <div className="logo-area">PharmacyConnect</div>
-    <nav className="nav-links">
-      <Link to="/">Home</Link>
-      <a href="#how-it-works">How It Works</a>
-      <a href="#features">Features</a>
-      <a href="#faq">FAQs</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
-);
+
 
 const Footer = () => (
   <footer className="footer">

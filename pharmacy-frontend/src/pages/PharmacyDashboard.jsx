@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
+import Header from "../component/Header";
 import "./BuyMedicine.css";
 
 const PharmacyDashboard = () => {
@@ -32,8 +33,8 @@ const PharmacyDashboard = () => {
 
   return (
     <div className="buy-medicine-bg">
-      <div className="buy-medicine-container">
-        <div className="buy-medicine-inner form-visible">
+      <Header />
+      <div className="buy-medicine-inner form-visible">
           <h2 className="buy-medicine-title">Pharmacy Dashboard</h2>
           {loading && <div>Loading requests...</div>}
           {error && <div className="error-msg">{error}</div>}
@@ -60,7 +61,6 @@ const PharmacyDashboard = () => {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };

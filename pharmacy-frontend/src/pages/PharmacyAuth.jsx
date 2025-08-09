@@ -2,18 +2,9 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./PharmacyAuth.css";
 import { useAuth } from "../AuthContext";
+import Header from "../component/Header";
 
-const Header = () => (
-  <header className="header">
-    <div className="logo-area">PharmacyConnect</div>
-    <nav className="nav-links">
-      <Link to="/">Home</Link>
-      <Link to="/buy-medicine">Buy Medicine</Link>
-      <Link to="/customer-auth">Customer Login/Signup</Link>
-      <Link to="/pharmacy-auth">Pharmacy Login/Signup</Link>
-    </nav>
-  </header>
-);
+
 
 const Footer = () => (
   <footer className="footer">

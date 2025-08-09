@@ -1,6 +1,11 @@
+import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import "./Header.css";
+
 const Header = () => {
   const { customer, pharmacy, logout } = useAuth();
+  
   return (
     <header className="header">
       <div className="logo-area">PharmacyConnect</div>
@@ -21,11 +26,17 @@ const Header = () => {
           </>
         )}
         {pharmacy && (
-          <>
-            <span className="user-info">{pharmacy.pharmacyName || pharmacy.email}</span>
-            <Link to="/pharmacy-dashboard">Dashboard</Link>
-            <button className="logout-btn" onClick={logout}>Logout</button>
-          </>
+          <div className="pharmacy-dropdown">
+            <span className="pharmacy-name">{pharmacy.pharmacyName || pharmacy.email}</span>
+            <div className="dropdown-menu">
+              <Link to="/pharmacy-dashboard" className="dropdown-item">
+                <span>Dashboard</span>
+              </Link>
+              <button onClick={logout} className="dropdown-item logout-item">
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
         )}
       </nav>
     </header>
