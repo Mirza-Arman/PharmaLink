@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 import "./CustomerAuth.css";
 
 const Header = () => (
@@ -37,6 +38,7 @@ const CustomerAuth = () => {
   const [form, setForm] = useState({ email: "", phone: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { pharmacy, loginCustomer } = useAuth();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,11 +47,27 @@ const CustomerAuth = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setError("");
+    
+    // Check if pharmacy is logged in before allowing customer login
+    if (!isSignup && pharmacy) {
+      setError("A pharmacy is currently logged in. Please logout the pharmacy first or the pharmacy session will be automatically cleared.");
+    }
+    
     try {
       const endpoint = isSignup ? "/signup" : "/login";
+      const headers = { "Content-Type": "application/json" };
+      
+      // Send pharmacy token if exists to check for conflicts
+      if (!isSignup) {
+        const pharmacyToken = localStorage.getItem("pharmacy_token");
+        if (pharmacyToken) {
+          headers.Authorization = `Bearer ${pharmacyToken}`;
+        }
+      }
+      
       const res = await fetch(API_URL + endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(form)
       });
       const data = await res.json();
@@ -58,9 +76,7 @@ const CustomerAuth = () => {
         return;
       }
       if (!isSignup) {
-        localStorage.setItem("customer_token", data.token);
-        // Optionally store user info
-        localStorage.setItem("customer_user", JSON.stringify(data.user));
+        loginCustomer(data.user, data.token);
         navigate("/");
       } else {
         setIsSignup(false);

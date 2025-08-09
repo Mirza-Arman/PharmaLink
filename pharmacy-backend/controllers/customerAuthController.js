@@ -26,6 +26,25 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    // Check for existing pharmacy token in headers
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+      const token = authHeader.split(' ')[1];
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          if (decoded.type === 'pharmacy') {
+            return res.status(403).json({ 
+              message: 'A pharmacy is currently logged in. Please logout the pharmacy first.' 
+            });
+          }
+        } catch (err) {
+          // Token is invalid, continue with login
+        }
+      }
+    }
+    
     const customer = await Customer.findOne({ email });
     if (!customer) return res.status(400).json({ message: 'Invalid credentials' });
 

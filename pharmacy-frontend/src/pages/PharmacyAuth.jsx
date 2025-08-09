@@ -45,7 +45,7 @@ const PharmacyAuth = () => {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { loginPharmacy } = useAuth();
+  const { customer, loginPharmacy } = useAuth();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -54,12 +54,28 @@ const PharmacyAuth = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setError("");
+    
+    // Check if customer is logged in before allowing pharmacy login
+    if (!isSignup && customer) {
+      setError("A customer is currently logged in. Please logout the customer first or the customer session will be automatically cleared.");
+    }
+    
     try {
       const endpoint = isSignup ? "/signup" : "/login";
       const body = isSignup ? form : { email: form.email, password: form.password };
+      const headers = { "Content-Type": "application/json" };
+      
+      // Send customer token if exists to check for conflicts
+      if (!isSignup) {
+        const customerToken = localStorage.getItem("customer_token");
+        if (customerToken) {
+          headers.Authorization = `Bearer ${customerToken}`;
+        }
+      }
+      
       const res = await fetch(API_URL + endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(body)
       });
       const data = await res.json();
