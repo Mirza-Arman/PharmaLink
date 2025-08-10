@@ -8,6 +8,7 @@ import SelectPharmacy from "./pages/SelectPharmacy";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
 import { AuthProvider } from "./AuthContext";
 import UserRequests from "./pages/UserRequests";
+import Footer from "./component/Footer";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
           <Route path="/user-requests" element={<UserRequests />} />
         </Routes>
+        <Footer />
       </Router>
     </AuthProvider>
   );
