@@ -3,8 +3,8 @@
   width: 100vw;
   background: linear-gradient(90deg, #2ca7a0 0%, #3bb2a9 100%);
   color: #fff;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   padding: 1.2rem 2.5rem;
   position: sticky;
@@ -21,13 +21,21 @@
   letter-spacing: 1px;
 }
 
-.nav-links {
+.nav-center {
   display: flex;
   gap: 2.2rem;
   align-items: center;
+  justify-content: center;
 }
 
-.nav-links a {
+.nav-right {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  justify-self: end;
+}
+
+.nav-center a, .nav-right a {
   color: #fff;
   text-decoration: none;
   font-weight: 500;
@@ -37,7 +45,7 @@
   transition: background 0.18s, color 0.18s;
 }
 
-.nav-links a:hover {
+.nav-center a:hover, .nav-right a:hover {
   background: #fff;
   color: #2ca7a0;
 }
@@ -270,11 +278,15 @@
     padding: 1rem 1.5rem;
   }
   
-  .nav-links {
-    gap: 1rem;
+  .nav-center {
+    gap: 1.2rem;
   }
-  
-  .nav-links a {
+
+  .nav-right {
+    gap: 0.8rem;
+  }
+
+  .nav-center a, .nav-right a {
     font-size: 0.95rem;
     padding: 0.2rem 0.5rem;
   }

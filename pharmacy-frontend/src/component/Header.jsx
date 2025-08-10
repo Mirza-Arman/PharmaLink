@@ -28,15 +28,16 @@ const Header = () => {
   return (
     <header className="header">
       <div className="logo-area">PharmacyConnect</div>
-      <nav className="nav-links">
+      <nav className="nav-center">
         <Link to="/">Home</Link>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#features">Features</a>
         <a href="#faq">FAQs</a>
         <a href="#contact">Contact</a>
+        <a href="#features">Features</a>
+      </nav>
+      <div className="nav-right">
         {!customer && !pharmacy && <>
-          <Link to="/customer-auth">Customer Login/Signup</Link>
-          <Link to="/pharmacy-auth">Pharmacy Login/Signup</Link>
+          <Link to="/customer-auth">Customer Login</Link>
+          <Link to="/pharmacy-auth">Pharmacy Login</Link>
         </>}
         {customer && (
           <div className="customer-dropdown">
@@ -145,7 +146,7 @@ const Header = () => {
             </div>
           </div>
         )}
-      </nav>
+      </div>
     </header>
   );
 };
