@@ -6,22 +6,6 @@ import Header from "../component/Header";
 
 
 
-const Footer = () => (
-  <footer className="footer">
-    <div className="footer-left">
-      <div className="footer-logo">PharmacyConnect</div>
-      <div className="footer-desc">Your trusted pharmacy marketplace</div>
-    </div>
-    <div className="footer-right">
-      <div className="footer-links">
-        <a href="#about">About Us</a>
-        <a href="#privacy">Privacy Policy</a>
-        <a href="#terms">Terms of Service</a>
-      </div>
-    </div>
-  </footer>
-);
-
 const API_URL = "http://localhost:5000/api/pharmacy";
 
 const PharmacyAuth = () => {
@@ -283,7 +267,6 @@ const PharmacyAuth = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
