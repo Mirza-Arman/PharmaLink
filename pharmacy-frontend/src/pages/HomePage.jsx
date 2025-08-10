@@ -32,7 +32,8 @@ const faqs = [
 
 
 const HomePage = () => {
-  const [openFaq, setOpenFaq] = useState(null);
+const [openFaq, setOpenFaq] = useState(null);
+const { customer, pharmacy } = useAuth();
 
   return (
     <div className="homepage-container">
@@ -45,8 +46,18 @@ const HomePage = () => {
           <h1 className="hero-title">Your Local Pharmacy, Now Online</h1>
           <p className="hero-subtitle">Compare prices, check availability, and order medicines from trusted pharmacies near you. Experience healthcare simplified.</p>
           <div className="hero-ctas">
-            <Link to="/buy-medicine" className="cta-button">Buy Medicines</Link>
-            <Link to="/pharmacy-auth" className="cta-button secondary">Pharmacy Login/Signup</Link>
+            {pharmacy ? (
+              <Link to="/pharmacy-dashboard" className="cta-button">Your Dashboard</Link>
+            ) : (
+              <>
+                <Link to="/buy-medicine" className="cta-button">Buy Medicines</Link>
+                {!customer ? (
+                  <Link to="/pharmacy-auth" className="cta-button secondary">Pharmacy Login/Signup</Link>
+                ) : (
+                  <Link to="/user-requests" className="cta-button secondary">User Requests</Link>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>

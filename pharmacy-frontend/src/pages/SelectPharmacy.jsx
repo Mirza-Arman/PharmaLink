@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./BuyMedicine.css";
 import { useAuth } from "../AuthContext";
 
-const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar"];
+const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Sialkot"];
 
 const SelectPharmacy = () => {
   const location = useLocation();
@@ -100,12 +100,15 @@ const SelectPharmacy = () => {
                     selectedPharmacies,
                     customer: customer?._id || null
                   };
-                  try {
-                    const res = await fetch("http://localhost:5000/api/customer/request", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(reqBody)
-                    });
+                   try {
+                     const headers = { "Content-Type": "application/json" };
+                     const token = localStorage.getItem("customer_token");
+                     if (token) headers.Authorization = `Bearer ${token}`;
+                     const res = await fetch("http://localhost:5000/api/customer/request", {
+                       method: "POST",
+                       headers,
+                       body: JSON.stringify(reqBody)
+                     });
                     if (res.ok) {
                       alert("Request submitted successfully!");
                       navigate("/");

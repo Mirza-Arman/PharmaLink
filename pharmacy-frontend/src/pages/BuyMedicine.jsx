@@ -4,7 +4,7 @@ import Header from "../component/Header";
 import "./BuyMedicine.css";
 
 const initialMedicine = { name: "", quantity: 1 };
-const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar"];
+const cities = ["Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Sialkot"];
 
 
 

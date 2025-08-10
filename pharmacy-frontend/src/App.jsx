@@ -7,6 +7,7 @@ import PharmacyAuth from "./pages/PharmacyAuth";
 import SelectPharmacy from "./pages/SelectPharmacy";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
 import { AuthProvider } from "./AuthContext";
+import UserRequests from "./pages/UserRequests";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/pharmacy-auth" element={<PharmacyAuth />} />
           <Route path="/select-pharmacy" element={<SelectPharmacy />} />
           <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
+          <Route path="/user-requests" element={<UserRequests />} />
         </Routes>
       </Router>
     </AuthProvider>
