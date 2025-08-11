@@ -79,7 +79,7 @@ const CustomerAuth = () => {
   };
 
   return (
-    <div className="auth-bg">
+    <div className="auth-bg customer-auth">
       <Header />
       <div className="auth-container">
         <div className="auth-inner">

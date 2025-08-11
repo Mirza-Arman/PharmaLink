@@ -23,10 +23,15 @@
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(44, 167, 160, 0.13);
   padding: 2.5rem 2rem 2rem 2rem;
-  max-width: 360px;
+  max-width: 420px;
   width: 100%;
   margin: 2rem 1rem 2rem 1rem;
   animation: fadeInAuth 0.6s cubic-bezier(.4,1.4,.6,1);
+}
+
+/* Ensure customer auth page always uses the compact width regardless of other global styles */
+.customer-auth .auth-inner {
+  max-width: 420px;
 }
 @keyframes fadeInAuth {
   from { opacity: 0; transform: translateY(40px) scale(0.98); }
