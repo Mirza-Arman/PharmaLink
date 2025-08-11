@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./PharmacyAuth.css";
@@ -270,5 +271,6 @@ const PharmacyAuth = () => {
     </div>
   );
 };
+
 
 export default PharmacyAuth; 

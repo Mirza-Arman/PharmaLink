@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./HomePage.css";
@@ -139,5 +140,6 @@ const { customer, pharmacy } = useAuth();
     </div>
   );
 };
+
 
 export default HomePage; 
