@@ -23,7 +23,7 @@
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(44, 167, 160, 0.13);
   padding: 2.5rem 2rem 2rem 2rem;
-  max-width: 480px;
+  max-width: 900px;
   width: 100%;
   margin: 2rem 1rem 2rem 1rem;
   opacity: 0;
@@ -50,6 +50,20 @@
   gap: 1.5rem;
 }
 
+/* Two Column Layout */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.left-column, .right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .form-section {
   display: flex;
   flex-direction: column;
@@ -62,23 +76,35 @@
   margin-bottom: 0.2rem;
 }
 
-.medicine-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+/* Enhanced Medicine Card */
+.medicine-card {
   background: #eaf7f6;
-  border-radius: 8px;
-  padding: 0.3rem 0.5rem;
+  border-radius: 12px;
+  padding: 1rem;
   box-shadow: 0 2px 8px rgba(44, 167, 160, 0.06);
   animation: fadeInRow 0.35s cubic-bezier(.4,1.4,.6,1) both;
+  border: 1px solid #e0f2f1;
 }
+
 @keyframes fadeInRow {
   from { opacity: 0; transform: translateY(20px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+.medicine-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.medicine-name-container {
+  position: relative;
+  flex: 1;
+}
+
 .medicine-input {
-  flex: 2;
+  width: 100%;
   padding: 0.6rem 0.9rem;
   border: 1.5px solid #e0f2f1;
   border-radius: 8px;
@@ -91,12 +117,93 @@
   border: 1.5px solid #2ca7a0;
   box-shadow: 0 0 0 2px #b2f0e6;
 }
-.medicine-qty {
-  width: 70px;
-  padding: 0.6rem 0.7rem;
-  border: 1.5px solid #e0f2f1;
+
+/* Autosuggest Dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0f2f1;
   border-radius: 8px;
-  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:hover {
+  background: #eaf7f6;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* Medicine Details Grid */
+.medicine-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.medicine-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #23424a;
+}
+
+.medicine-select {
+  padding: 0.5rem 0.7rem;
+  border: 1.5px solid #e0f2f1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.18s, box-shadow 0.18s;
+  background: #fff;
+}
+
+.medicine-select:focus {
+  border: 1.5px solid #2ca7a0;
+  box-shadow: 0 0 0 2px #b2f0e6;
+}
+
+.medicine-input-small {
+  padding: 0.5rem 0.7rem;
+  border: 1.5px solid #e0f2f1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.18s, box-shadow 0.18s;
+  background: #fff;
+}
+
+.medicine-input-small:focus {
+  border: 1.5px solid #2ca7a0;
+  box-shadow: 0 0 0 2px #b2f0e6;
+}
+
+.medicine-qty {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1.5px solid #e0f2f1;
+  border-radius: 6px;
+  font-size: 0.9rem;
   outline: none;
   transition: border 0.18s, box-shadow 0.18s;
   background: #fff;
@@ -105,6 +212,14 @@
   border: 1.5px solid #2ca7a0;
   box-shadow: 0 0 0 2px #b2f0e6;
 }
+
+/* Medicine Actions */
+.medicine-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .add-btn, .remove-btn {
   background: #2ca7a0;
   color: #fff;
@@ -118,7 +233,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0.2rem;
   transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
   box-shadow: 0 2px 8px rgba(44, 167, 160, 0.10);
 }
@@ -156,6 +270,12 @@ textarea {
 .form-input:focus {
   border: 1.5px solid #2ca7a0;
   box-shadow: 0 0 0 2px #b2f0e6;
+}
+
+.address-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
 }
 
 .submit-btn {
@@ -209,6 +329,23 @@ textarea {
 .pharmacy-card:hover {
   box-shadow: 0 6px 18px rgba(44, 167, 160, 0.18);
   transform: translateY(-2px) scale(1.03);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .two-column-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .medicine-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .buy-medicine-inner {
+    max-width: 480px;
+    padding: 1.5rem 1rem 1rem 1rem;
+  }
 }
 
 @media (max-width: 600px) {
