@@ -25,7 +25,7 @@ const Footer = () => {
             <a href="/#how-it-works">How it works</a>
             <a href="/#features">Features</a>
             <a href="/#faq">FAQ</a>
-            <a href="mailto:support@pharmacyconnect.app">Contact</a>
+            <Link to="/contact">Contact</Link>
           </nav>
         </div>
 

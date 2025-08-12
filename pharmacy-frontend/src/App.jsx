@@ -10,6 +10,7 @@ import PharmacyDashboard from "./pages/PharmacyDashboard";
 import { AuthProvider } from "./AuthContext";
 import UserRequests from "./pages/UserRequests";
 import Footer from "./component/Footer";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/select-pharmacy" element={<SelectPharmacy />} />
           <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
           <Route path="/user-requests" element={<UserRequests />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
         <Footer />
       </Router>

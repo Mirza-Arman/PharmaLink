@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 const customerAuthRoutes = require('./routes/authCustomer');
 const pharmacyAuthRoutes = require('./routes/authPharmacy');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,7 @@ const authLimiter = rateLimit({
 
 app.use('/api/customer', authLimiter, customerAuthRoutes);
 app.use('/api/pharmacy', authLimiter, pharmacyAuthRoutes);
+app.use('/api/contact', contactRoutes);
 
 mongoose.connect('mongodb://localhost:27017/pharmacydb', {
   useNewUrlParser: true,
