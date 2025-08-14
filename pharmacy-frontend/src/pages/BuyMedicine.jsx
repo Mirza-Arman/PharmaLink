@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 import Header from "../component/Header";
 import "./BuyMedicine.css";
 
@@ -33,6 +34,7 @@ const BuyMedicine = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
+  const { customer } = useAuth();
   const [submitErrors, setSubmitErrors] = useState([]);
 
   React.useEffect(() => {
@@ -297,15 +299,14 @@ const BuyMedicine = () => {
                   return;
                 }
                 setSubmitErrors([]);
-                // Pass form data to select pharmacy page
-                navigate("/select-pharmacy", {
-                  state: {
-                    medicines,
-                    address,
-                    phone,
-                    city
-                  }
-                });
+                const orderState = { medicines, address, phone, city };
+                if (!customer) {
+                  navigate("/customer-auth", {
+                    state: { redirectTo: "/select-pharmacy", pendingOrder: orderState }
+                  });
+                  return;
+                }
+                navigate("/select-pharmacy", { state: orderState });
               }}
             >
               Select Pharmacy
