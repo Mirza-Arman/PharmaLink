@@ -23,7 +23,9 @@ const medicineSuggestions = [
 ];
 
 const BuyMedicine = () => {
-  const [medicines, setMedicines] = useState([{ ...initialMedicine }]);
+  const [medicines, setMedicines] = useState([]);
+  const [currentMedicine, setCurrentMedicine] = useState({ ...initialMedicine });
+  const [nameError, setNameError] = useState(false);
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
@@ -31,29 +33,35 @@ const BuyMedicine = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
+  const [submitErrors, setSubmitErrors] = useState([]);
 
   React.useEffect(() => {
     setTimeout(() => setFormVisible(true), 100);
   }, []);
 
-  const handleMedicineChange = (idx, field, value) => {
-    const updated = medicines.map((med, i) =>
-      i === idx ? { ...med, [field]: value } : med
-    );
-    setMedicines(updated);
+  const handleCurrentMedicineChange = (field, value) => {
+    if (field === "name" && nameError) {
+      setNameError(false);
+    }
+    setCurrentMedicine(prev => ({ ...prev, [field]: value }));
   };
 
   const addMedicine = () => {
-    setMedicines([...medicines, { ...initialMedicine }]);
+    if (!currentMedicine.name || !currentMedicine.name.trim()) {
+      setNameError(true);
+      return;
+    }
+    setMedicines(prev => [...prev, { ...currentMedicine }]);
+    setCurrentMedicine({ ...initialMedicine });
+    setShowSuggestions(false);
   };
 
-  const removeMedicine = (idx) => {
-    if (medicines.length === 1) return;
-    setMedicines(medicines.filter((_, i) => i !== idx));
+  const removeMedicine = (indexToRemove) => {
+    setMedicines(prev => prev.filter((_, i) => i !== indexToRemove));
   };
 
-  const handleMedicineNameChange = (idx, value) => {
-    handleMedicineChange(idx, "name", value);
+  const handleMedicineNameChange = (value) => {
+    handleCurrentMedicineChange("name", value);
     
     if (value.length > 1) {
       const filtered = medicineSuggestions.filter(med => 
@@ -66,43 +74,66 @@ const BuyMedicine = () => {
     }
   };
 
-  const selectSuggestion = (suggestion, idx) => {
-    handleMedicineChange(idx, "name", suggestion);
+  const selectSuggestion = (suggestion) => {
+    handleCurrentMedicineChange("name", suggestion);
     setShowSuggestions(false);
   };
+
+  const getSubmitErrors = () => {
+    const errors = [];
+    if (medicines.length === 0) errors.push("Please add at least one medicine.");
+    if (!city) errors.push("Please select a city.");
+    if (!address.trim()) errors.push("Please enter your address.");
+    if (!/^03[0-9]{9}$/.test(phone)) errors.push("Please enter a valid phone number (03XXXXXXXXX).");
+    return errors;
+  };
+
+  React.useEffect(() => {
+    if (submitErrors.length > 0) {
+      setSubmitErrors(getSubmitErrors());
+    }
+  }, [medicines, city, address, phone]);
+
+  const isSubmitDisabled =
+    medicines.length === 0 ||
+    !city ||
+    !address.trim() ||
+    !/^03[0-9]{9}$/.test(phone);
 
   return (
     <div className="buy-medicine-bg">
       <Header />
       <div className="buy-medicine-container">
         <div className={`buy-medicine-inner ${formVisible ? "form-visible" : ""}`}>
-          <h2 className="buy-medicine-title">Buy Medicines</h2>
+          <h2 className="buy-medicine-title">Order Medicines</h2>
           <form className="buy-medicine-form" autoComplete="off">
             <div className="two-column-layout">
               {/* Left Column - Medicine Selection */}
               <div className="left-column">
                 <div className="form-section">
                   <label className="form-label">Medicines List</label>
-                  {medicines.map((med, idx) => (
-                    <div className="medicine-card" key={idx} style={{animationDelay: `${idx * 0.05}s`}}>
+                  <div className="medicine-card">
                       <div className="medicine-row">
                         <div className="medicine-name-container">
                           <input
-                            className="medicine-input"
+                          className={`medicine-input${nameError ? " input-error" : ""}`}
                             type="text"
                             placeholder="Medicine Name"
-                            value={med.name}
-                            onChange={e => handleMedicineNameChange(idx, e.target.value)}
-                            onFocus={() => med.name.length > 1 && setShowSuggestions(true)}
+                          value={currentMedicine.name}
+                          onChange={e => handleMedicineNameChange(e.target.value)}
+                          onFocus={() => currentMedicine.name.length > 1 && setShowSuggestions(true)}
                             required
                           />
+                        {nameError && (
+                          <div className="error-text">Add medicine</div>
+                        )}
                           {showSuggestions && suggestions.length > 0 && (
                             <div className="suggestions-dropdown">
                               {suggestions.map((suggestion, suggestionIdx) => (
                                 <div
                                   key={suggestionIdx}
                                   className="suggestion-item"
-                                  onClick={() => selectSuggestion(suggestion, idx)}
+                                onClick={() => selectSuggestion(suggestion)}
                                 >
                                   {suggestion}
                                 </div>
@@ -111,14 +142,13 @@ const BuyMedicine = () => {
                           )}
                         </div>
                       </div>
-                      
                       <div className="medicine-details">
                         <div className="medicine-field">
                           <label className="field-label">Type</label>
                           <select
                             className="medicine-select"
-                            value={med.type}
-                            onChange={e => handleMedicineChange(idx, "type", e.target.value)}
+                          value={currentMedicine.type}
+                          onChange={e => handleCurrentMedicineChange("type", e.target.value)}
                           >
                             <option value="">Select Type</option>
                             {medicineTypes.map(type => (
@@ -126,54 +156,78 @@ const BuyMedicine = () => {
                             ))}
                           </select>
                         </div>
-                        
                         <div className="medicine-field">
                           <label className="field-label">Strength/Dosage</label>
                           <input
                             className="medicine-input-small"
                             type="text"
                             placeholder="e.g., 500mg, 5ml"
-                            value={med.strength}
-                            onChange={e => handleMedicineChange(idx, "strength", e.target.value)}
+                          value={currentMedicine.strength}
+                          onChange={e => handleCurrentMedicineChange("strength", e.target.value)}
                           />
                         </div>
-                        
-                        <div className="medicine-field">
+                        <div className="medicine-field medicine-qty-actions">
                           <label className="field-label">Quantity</label>
-                          <input
-                            className="medicine-qty"
-                            type="number"
-                            min="1"
-                            value={med.quantity}
-                            onChange={e => handleMedicineChange(idx, "quantity", e.target.value)}
-                            required
-                          />
-                        </div>
+                            <input
+                              className="medicine-qty"
+                              type="number"
+                              min="1"
+                          value={currentMedicine.quantity}
+                          onChange={e => handleCurrentMedicineChange("quantity", e.target.value)}
+                              required
+                            />
                       </div>
-                      
                       <div className="medicine-actions">
                         <button
                           type="button"
                           className="remove-btn"
-                          onClick={() => removeMedicine(idx)}
-                          disabled={medicines.length === 1}
-                          title="Remove"
+                          onClick={() => removeMedicine(medicines.length - 1)}
+                          disabled={medicines.length === 0}
+                          title="Remove last medicine"
                         >
-                          &minus;
+                          Remove
                         </button>
-                        {idx === medicines.length - 1 && (
-                          <button
-                            type="button"
-                            className="add-btn"
-                            onClick={addMedicine}
-                            title="Add Medicine"
-                          >
-                            +
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className="add-btn"
+                          onClick={addMedicine}
+                          title="Add Medicine"
+                        >
+                          Add
+                        </button>
                       </div>
                     </div>
-                  ))}
+
+                    {medicines.length > 0 && (
+                      <div className="added-medicine-list">
+                        <div className="added-medicine-header">
+                          <span>Medicine</span>
+                          <span>Type</span>
+                          <span>Strength</span>
+                          <span>Qty</span>
+                          <span>Action</span>
+                        </div>
+                        <ul>
+                          {medicines.map((m, i) => (
+                            <li key={`${m.name}-${i}`} className="added-medicine-item">
+                              <span className="added-medicine-name">{m.name || "Unnamed"}</span>
+                              <span className="added-medicine-meta">{m.type || "-"}</span>
+                              <span className="added-medicine-meta">{m.strength || "-"}</span>
+                              <span className="added-medicine-qty">x{m.quantity}</span>
+                              <button
+                                type="button"
+                                className="remove-btn"
+                                title="Remove this medicine"
+                                onClick={() => removeMedicine(i)}
+                              >
+                                -
+                                </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                              )}
+                            </div>
                 </div>
               </div>
 
@@ -224,10 +278,25 @@ const BuyMedicine = () => {
               </div>
             </div>
 
+            {submitErrors.length > 0 && (
+              <div className="submit-error">
+                <ul>
+                  {submitErrors.map((msg, idx) => (
+                    <li key={idx}>{msg}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <button
               className="submit-btn"
               type="button"
               onClick={() => {
+                const errors = getSubmitErrors();
+                if (errors.length > 0) {
+                  setSubmitErrors(errors);
+                  return;
+                }
+                setSubmitErrors([]);
                 // Pass form data to select pharmacy page
                 navigate("/select-pharmacy", {
                   state: {
