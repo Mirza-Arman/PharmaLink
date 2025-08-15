@@ -30,6 +30,7 @@ const BuyMedicine = () => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [formVisible, setFormVisible] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -39,7 +40,8 @@ const BuyMedicine = () => {
 
   React.useEffect(() => {
     setTimeout(() => setFormVisible(true), 100);
-  }, []);
+    if (customer && customer.name) setCustomerName(customer.name);
+  }, [customer]);
 
   const handleCurrentMedicineChange = (field, value) => {
     if (field === "name" && nameError) {
@@ -236,6 +238,19 @@ const BuyMedicine = () => {
               {/* Right Column - Customer Information */}
               <div className="right-column">
                 <div className="form-section">
+                  <label className="form-label" htmlFor="customerName">Customer Name</label>
+                  <input
+                    id="customerName"
+                    className="form-input"
+                    type="text"
+                    placeholder="Full Name"
+                    value={customerName}
+                    onChange={e => setCustomerName(e.target.value)}
+                    required
+                    disabled={!!(customer && customer.name)}
+                  />
+                </div>
+                <div className="form-section">
                   <label className="form-label" htmlFor="city">City</label>
                   <select
                     id="city"
@@ -299,7 +314,7 @@ const BuyMedicine = () => {
                   return;
                 }
                 setSubmitErrors([]);
-                const orderState = { medicines, address, phone, city };
+                const orderState = { medicines, address, phone, city, customerName };
                 if (!customer) {
                   navigate("/customer-auth", {
                     state: { redirectTo: "/select-pharmacy", pendingOrder: orderState }

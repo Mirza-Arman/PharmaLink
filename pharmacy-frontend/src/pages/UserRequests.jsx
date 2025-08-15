@@ -53,21 +53,39 @@ const UserRequests = () => {
                       {new Date(req.createdAt).toLocaleString()}
                     </div>
                     <div style={{ marginBottom: 6 }}>
-                      City: {req.city} | Phone: {req.phone}
+                      <b>Customer Name:</b> {req.customerName || "N/A"}
                     </div>
                     <div style={{ marginBottom: 6 }}>
-                      Address: {req.address}
+                      <b>City:</b> {req.city} | <b>Phone:</b> {req.phone}
                     </div>
                     <div style={{ marginBottom: 6 }}>
-                      Selected Pharmacies: {Array.isArray(req.selectedPharmacies) ? req.selectedPharmacies.length : 0}
+                      <b>Address:</b> {req.address}
+                    </div>
+                    <div style={{ marginBottom: 6 }}>
+                      <b>Selected Pharmacies:</b> {Array.isArray(req.selectedPharmacies) ? req.selectedPharmacies.length : 0}
                     </div>
                     <div>
-                      Medicines:
-                      <ul style={{ marginTop: 6 }}>
-                        {req.medicines?.map((m, idx) => (
-                          <li key={idx}>{m.name} — {m.quantity}</li>
-                        ))}
-                      </ul>
+                      <b>Medicines:</b>
+                      <table style={{ width: '100%', marginTop: 6, borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Name</th>
+                            <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Type</th>
+                            <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Strength</th>
+                            <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {req.medicines?.map((m, idx) => (
+                            <tr key={idx}>
+                              <td>{m.name}</td>
+                              <td>{m.type || '-'}</td>
+                              <td>{m.strength || '-'}</td>
+                              <td>{m.quantity}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 ))}

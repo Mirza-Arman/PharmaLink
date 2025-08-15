@@ -45,7 +45,9 @@ const PharmacyDashboard = () => {
             <div className="pharmacy-grid">
               {requests.map((req, idx) => (
                 <div className="pharmacy-card" key={req._id || idx}>
-                  <div><b>Customer:</b> {req.customer?.email || "N/A"}</div>
+                  <div>
+                    <b>Customer:</b> {req.customer?.name ? `${req.customer.name} (${req.customer.email})` : req.customer?.email || "N/A"}
+                  </div>
                   <div><b>City:</b> {req.city}</div>
                   <div><b>Address:</b> {req.address}</div>
                   <div><b>Phone:</b> {req.phone}</div>
