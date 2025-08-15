@@ -42,21 +42,39 @@ const PharmacyDashboard = () => {
             <div>No requests for your pharmacy yet.</div>
           )}
           {!loading && requests.length > 0 && (
-            <div className="pharmacy-grid">
+            <div>
               {requests.map((req, idx) => (
-                <div className="pharmacy-card" key={req._id || idx}>
-                  <div>
-                    <b>Customer:</b> {req.customer?.name ? `${req.customer.name} (${req.customer.email})` : req.customer?.email || "N/A"}
+                <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24 }}>
+                  {/* Left column: Customer data */}
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <div><b>Customer:</b> {req.customer?.name || "N/A"}</div>
+                    <div><b>City:</b> {req.city}</div>
+                    <div><b>Address:</b> {req.address}</div>
+                    <div><b>Phone:</b> {req.phone}</div>
                   </div>
-                  <div><b>City:</b> {req.city}</div>
-                  <div><b>Address:</b> {req.address}</div>
-                  <div><b>Phone:</b> {req.phone}</div>
-                  <div><b>Medicines:</b>
-                    <ul style={{margin:0,paddingLeft:18}}>
-                      {req.medicines.map((med, i) => (
-                        <li key={i}>{med.name} (x{med.quantity})</li>
-                      ))}
-                    </ul>
+                  {/* Right column: Medicine list */}
+                  <div style={{ flex: 2 }}>
+                    <b>Medicines:</b>
+                    <table style={{ width: '100%', marginTop: 6, borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Name</th>
+                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Type</th>
+                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Strength/Dosage</th>
+                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Quantity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {req.medicines.map((med, i) => (
+                          <tr key={i}>
+                            <td>{med.name}</td>
+                            <td>{med.type || '-'}</td>
+                            <td>{med.strength || '-'}</td>
+                            <td>{med.quantity}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               ))}

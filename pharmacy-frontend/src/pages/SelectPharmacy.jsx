@@ -98,17 +98,18 @@ const SelectPharmacy = () => {
                     phone: location.state?.phone || "",
                     city: city,
                     selectedPharmacies,
-                    customer: customer?._id || null
+                    customer: customer?._id || null,
+                    customerName: customer?.name || location.state?.customerName || ""
                   };
-                   try {
-                     const headers = { "Content-Type": "application/json" };
-                     const token = localStorage.getItem("customer_token");
-                     if (token) headers.Authorization = `Bearer ${token}`;
-                     const res = await fetch("http://localhost:5000/api/customer/request", {
-                       method: "POST",
-                       headers,
-                       body: JSON.stringify(reqBody)
-                     });
+                  try {
+                    const headers = { "Content-Type": "application/json" };
+                    const token = localStorage.getItem("customer_token");
+                    if (token) headers.Authorization = `Bearer ${token}`;
+                    const res = await fetch("http://localhost:5000/api/customer/request", {
+                      method: "POST",
+                      headers,
+                      body: JSON.stringify(reqBody)
+                    });
                     if (res.ok) {
                       alert("Request submitted successfully!");
                       navigate("/");
