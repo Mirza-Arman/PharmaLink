@@ -8,6 +8,8 @@ const PharmacyDashboard = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showMedicinePopup, setShowMedicinePopup] = useState(false);
 
   useEffect(() => {
     if (!pharmacy || !pharmacy._id) {
@@ -31,6 +33,16 @@ const PharmacyDashboard = () => {
       });
   }, [pharmacy]);
 
+  const handleViewMedicineList = (request) => {
+    setSelectedRequest(request);
+    setShowMedicinePopup(true);
+  };
+
+  const closeMedicinePopup = () => {
+    setShowMedicinePopup(false);
+    setSelectedRequest(null);
+  };
+
   return (
     <div className="buy-medicine-bg">
       <Header />
@@ -51,21 +63,63 @@ const PharmacyDashboard = () => {
                     <div><b>City:</b> {req.city}</div>
                     <div><b>Address:</b> {req.address}</div>
                     <div><b>Phone:</b> {req.phone}</div>
+                    <div style={{ marginTop: '10px' }}>
+                      <button 
+                        className="view-medicine-btn"
+                        onClick={() => handleViewMedicineList(req)}
+                      >
+                        View Medicine List
+                      </button>
+                    </div>
                   </div>
-                  {/* Right column: Medicine list */}
+                  {/* Right column: Basic request info */}
                   <div style={{ flex: 2 }}>
-                    <b>Medicines:</b>
-                    <table style={{ width: '100%', marginTop: 6, borderCollapse: 'collapse' }}>
+                    <div><b>Request ID:</b> {req._id}</div>
+                    <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
+                    <div><b>Total Medicines:</b> {req.medicines.length}</div>
+                    <div><b>Status:</b> <span style={{ color: '#007bff', fontWeight: 'bold' }}>Pending</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Medicine List Popup */}
+        {showMedicinePopup && selectedRequest && (
+          <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
+            <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="medicine-popup-header">
+                <h3>Medicine List</h3>
+                <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
+              </div>
+              
+              <div className="medicine-popup-content">
+                <div className="customer-info-section">
+                  <h4>Customer Information</h4>
+                  <div className="customer-details">
+                    <p><strong>Name:</strong> {selectedRequest.customer?.name || "N/A"}</p>
+                    <p><strong>Phone:</strong> {selectedRequest.phone}</p>
+                    <p><strong>City:</strong> {selectedRequest.city}</p>
+                    <p><strong>Address:</strong> {selectedRequest.address}</p>
+                    <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="medicine-list-section">
+                  <h4>Requested Medicines</h4>
+                  <div className="medicine-table-container">
+                    <table className="medicine-popup-table">
                       <thead>
                         <tr>
-                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Name</th>
-                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Type</th>
-                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Strength/Dosage</th>
-                          <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Quantity</th>
+                          <th>Medicine Name</th>
+                          <th>Type</th>
+                          <th>Strength/Dosage</th>
+                          <th>Quantity</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {req.medicines.map((med, i) => (
+                        {selectedRequest.medicines.map((med, i) => (
                           <tr key={i}>
                             <td>{med.name}</td>
                             <td>{med.type || '-'}</td>
@@ -77,10 +131,16 @@ const PharmacyDashboard = () => {
                     </table>
                   </div>
                 </div>
-              ))}
+
+                <div className="popup-actions">
+                  <button className="action-btn accept-btn">Accept Request</button>
+                  <button className="action-btn reject-btn">Reject Request</button>
+                  <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
     </div>
   );
 };

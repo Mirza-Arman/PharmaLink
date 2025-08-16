@@ -489,3 +489,261 @@ textarea {
   background: rgba(44, 167, 160, 0.97);
   box-shadow: 0 2px 12px rgba(44, 167, 160, 0.08);
 }
+
+/* View Medicine Button */
+.view-medicine-btn {
+  background: #2ca7a0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+  box-shadow: 0 2px 4px rgba(44, 167, 160, 0.2);
+}
+
+.view-medicine-btn:hover {
+  background: #3bb2a9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(44, 167, 160, 0.3);
+}
+
+/* Medicine Popup Styles */
+.medicine-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.medicine-popup {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+.medicine-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.medicine-popup-header h3 {
+  margin: 0;
+  color: #2ca7a0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.close-popup-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.18s, color 0.18s;
+}
+
+.close-popup-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.medicine-popup-content {
+  padding: 24px;
+}
+
+.customer-info-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #2ca7a0;
+}
+
+.customer-info-section h4 {
+  margin: 0 0 12px 0;
+  color: #2ca7a0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.customer-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.customer-details p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.customer-details strong {
+  color: #555;
+}
+
+.medicine-list-section {
+  margin-bottom: 24px;
+}
+
+.medicine-list-section h4 {
+  margin: 0 0 16px 0;
+  color: #2ca7a0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.medicine-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.medicine-popup-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.medicine-popup-table th {
+  background: #2ca7a0;
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.medicine-popup-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.medicine-popup-table tr:hover {
+  background: #f8f9fa;
+}
+
+.medicine-popup-table tr:last-child td {
+  border-bottom: none;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.accept-btn {
+  background: #28a745;
+  color: white;
+}
+
+.accept-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.reject-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.reject-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.close-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.close-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive Design for Popup */
+@media (max-width: 768px) {
+  .medicine-popup {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .medicine-popup-content {
+    padding: 16px;
+  }
+  
+  .customer-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .popup-actions {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+  }
+}
