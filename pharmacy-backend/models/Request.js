@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 
 const requestSchema = new mongoose.Schema({
-  medicines: [{ name: String, quantity: Number }],
+  medicines: [{ 
+    name: String, 
+    type: { type: String, default: '' },
+    strength: { type: String, default: '' },
+    quantity: Number 
+  }],
+  customerName: { type: String, default: '' },
   address: String,
   phone: String,
   city: String,

@@ -59,7 +59,7 @@ const PharmacyDashboard = () => {
                 <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24 }}>
                   {/* Left column: Customer data */}
                   <div style={{ flex: 1, minWidth: 180 }}>
-                    <div><b>Customer:</b> {req.customer?.name || "N/A"}</div>
+                    <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>
                     <div><b>City:</b> {req.city}</div>
                     <div><b>Address:</b> {req.address}</div>
                     <div><b>Phone:</b> {req.phone}</div>
@@ -98,7 +98,7 @@ const PharmacyDashboard = () => {
                 <div className="customer-info-section">
                   <h4>Customer Information</h4>
                   <div className="customer-details">
-                    <p><strong>Name:</strong> {selectedRequest.customer?.name || "N/A"}</p>
+                    <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
                     <p><strong>Phone:</strong> {selectedRequest.phone}</p>
                     <p><strong>City:</strong> {selectedRequest.city}</p>
                     <p><strong>Address:</strong> {selectedRequest.address}</p>

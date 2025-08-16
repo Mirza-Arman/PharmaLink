@@ -12,7 +12,7 @@ router.post('/login', login);
 // Create a new request (order)
 router.post('/request', async (req, res) => {
   try {
-    const { medicines, address, phone, city, selectedPharmacies } = req.body;
+    const { medicines, address, phone, city, selectedPharmacies, customerName } = req.body;
 
     let customerId = req.body.customer || null;
     // If not provided, try to extract from Authorization header
@@ -30,8 +30,20 @@ router.post('/request', async (req, res) => {
         }
       }
     }
+    
+    console.log('Creating request with data:', {
+      medicines,
+      customerName,
+      address,
+      phone,
+      city,
+      selectedPharmacies,
+      customer: customerId
+    });
+    
     const request = new Request({
       medicines,
+      customerName,
       address,
       phone,
       city,
@@ -41,7 +53,8 @@ router.post('/request', async (req, res) => {
     await request.save();
     res.status(201).json({ message: 'Request created', request });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error creating request:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 

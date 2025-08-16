@@ -1,4 +1,8 @@
 require('dotenv').config();
+// Set default JWT_SECRET if not provided in environment
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'default_jwt_secret_for_development_only_change_in_production';
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');

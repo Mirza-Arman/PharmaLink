@@ -99,8 +99,11 @@ const SelectPharmacy = () => {
                     city: city,
                     selectedPharmacies,
                     customer: customer?._id || null,
-                    customerName: customer?.name || location.state?.customerName || ""
+                    customerName: location.state?.customerName || customer?.email || ""
                   };
+                  
+                  console.log('Sending request with data:', reqBody);
+                  
                   try {
                     const headers = { "Content-Type": "application/json" };
                     const token = localStorage.getItem("customer_token");
@@ -110,14 +113,20 @@ const SelectPharmacy = () => {
                       headers,
                       body: JSON.stringify(reqBody)
                     });
+                    
                     if (res.ok) {
+                      const responseData = await res.json();
+                      console.log('Request successful:', responseData);
                       alert("Request submitted successfully!");
                       navigate("/");
                     } else {
-                      alert("Failed to submit request");
+                      const errorData = await res.json().catch(() => ({}));
+                      console.error('Request failed:', errorData);
+                      alert("Failed to submit request: " + (errorData.message || 'Unknown error'));
                     }
-                  } catch {
-                    alert("Failed to submit request");
+                  } catch (error) {
+                    console.error('Network error:', error);
+                    alert("Failed to submit request: Network error");
                   }
                 }}
               >

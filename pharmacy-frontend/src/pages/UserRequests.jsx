@@ -53,7 +53,7 @@ const UserRequests = () => {
                       {new Date(req.createdAt).toLocaleString()}
                     </div>
                     <div style={{ marginBottom: 6 }}>
-                      <b>Customer Name:</b> {req.customerName || "N/A"}
+                      <b>Customer Name:</b> {req.customerName || customer?.email || "N/A"}
                     </div>
                     <div style={{ marginBottom: 6 }}>
                       <b>City:</b> {req.city} | <b>Phone:</b> {req.phone}
