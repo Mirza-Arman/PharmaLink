@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const Customer = require('../models/Customer');
 const Request = require('../models/Request');
+const Bill = require('../models/Bill');
 
 router.post('/signup', signup);
 router.post('/login', login);
@@ -85,6 +86,19 @@ router.get('/requests', auth('customer'), async (req, res) => {
   try {
     const requests = await Request.find({ customer: req.user.id }).sort({ createdAt: -1 });
     res.json(requests);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get bills for a specific logged-in customer
+router.get('/bills', auth('customer'), async (req, res) => {
+  try {
+    const bills = await Bill.find({ customer: req.user.id })
+      .populate('pharmacy', 'pharmacyName address phone')
+      .populate('request')
+      .sort({ createdAt: -1 });
+    res.json(bills);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

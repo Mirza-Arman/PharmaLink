@@ -13,6 +13,9 @@ const requestSchema = new mongoose.Schema({
   city: String,
   customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
   selectedPharmacies: [String], // Array of pharmacy IDs as strings
+  status: { type: String, enum: ['pending', 'accepted', 'rejected', 'completed'], default: 'pending' },
+  acceptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Pharmacy' },
+  bill: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill' },
   createdAt: { type: Date, default: Date.now }
 });
 

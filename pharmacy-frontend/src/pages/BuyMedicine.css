@@ -521,7 +521,7 @@ textarea {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -745,5 +745,256 @@ textarea {
   
   .action-btn {
     width: 100%;
+  }
+}
+
+/* Bill Form Styles */
+.bill-form-popup {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.bill-form-section {
+  margin: 20px 0;
+}
+
+.price-input {
+  width: 80px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.delivery-details {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.delivery-inputs {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 200px;
+}
+
+.input-group label {
+  font-weight: bold;
+  color: #333;
+}
+
+.delivery-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.bill-summary {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.total-row {
+  font-size: 18px;
+  color: #007bff;
+  border-top: 2px solid #007bff;
+  margin-top: 10px;
+  padding-top: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .delivery-inputs {
+    flex-direction: column;
+  }
+  
+  .input-group {
+    min-width: 100%;
+  }
+  
+  .bill-form-popup {
+    max-width: 95vw;
+  }
+  
+  .price-input {
+    width: 60px;
+  }
+}
+
+/* UserRequests Page Styles */
+.section-container {
+  margin: 30px 0;
+}
+
+.section-container h3 {
+  color: #333;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.requests-grid, .bills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.request-card, .bill-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.request-card:hover, .bill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.request-header, .bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.request-header h4, .bill-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.request-details, .bill-details {
+  margin-bottom: 15px;
+}
+
+.request-details p, .bill-details p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.bill-info {
+  background-color: #e8f5e8;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.bill-info p {
+  margin: 0;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.view-bill-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.view-bill-btn:hover {
+  background-color: #0056b3;
+}
+
+.no-data {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+/* Bill Details Popup */
+.bill-details-popup {
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.pharmacy-info-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.pharmacy-details p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.delivery-info {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+}
+
+.delivery-info p {
+  margin: 0;
+  color: #1976d2;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .requests-grid, .bills-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .request-header, .bill-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .status-badge {
+    align-self: flex-start;
   }
 }

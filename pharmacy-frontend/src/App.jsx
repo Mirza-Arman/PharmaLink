@@ -11,6 +11,7 @@ import { AuthProvider } from "./AuthContext";
 import UserRequests from "./pages/UserRequests";
 import Footer from "./component/Footer";
 import Contact from "./pages/Contact";
+import TestPopup from "./pages/TestPopup";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
           <Route path="/user-requests" element={<UserRequests />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/test-popup" element={<TestPopup />} />
         </Routes>
         <Footer />
       </Router>
