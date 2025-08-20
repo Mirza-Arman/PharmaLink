@@ -68,37 +68,65 @@ router.post('/accept-request/:requestId', auth('pharmacy'), async (req, res) => 
       return res.status(400).json({ message: 'Request is not pending' });
     }
 
+    // Validate input data
+    if (!medicinesArr || !Array.isArray(medicinesArr) || medicinesArr.length === 0) {
+      return res.status(400).json({ message: 'Medicines array is required' });
+    }
+
+    if (!deliveryTime || deliveryTime.trim() === '') {
+      return res.status(400).json({ message: 'Delivery time is required' });
+    }
+
     // Calculate totals
     let subtotal = 0;
     const medicinesWithPrices = medicinesArr.map(med => {
       const pricePerUnit = Number(med.pricePerUnit);
       const quantity = Number(med.quantity);
+      
+      if (isNaN(pricePerUnit) || pricePerUnit <= 0) {
+        throw new Error(`Invalid price for medicine: ${med.name}`);
+      }
+      if (isNaN(quantity) || quantity <= 0) {
+        throw new Error(`Invalid quantity for medicine: ${med.name}`);
+      }
+      
       const totalPrice = pricePerUnit * quantity;
       subtotal += totalPrice;
       return {
-        name: med.name,
-        type: med.type,
-        strength: med.strength,
+        name: med.name || '',
+        type: med.type || '',
+        strength: med.strength || '',
         quantity,
         pricePerUnit,
         totalPrice
       };
     });
 
-    const deliveryChargesNum = Number(deliveryCharges);
+    const deliveryChargesNum = Number(deliveryCharges) || 0;
+    if (isNaN(deliveryChargesNum) || deliveryChargesNum < 0) {
+      return res.status(400).json({ message: 'Invalid delivery charges' });
+    }
+    
     const totalAmount = subtotal + deliveryChargesNum;
 
-    // Create bill
-    const bill = new Bill({
+    // Create bill data
+    const billData = {
       request: requestId,
       pharmacy: req.user.id,
-      customer: request.customer,
       medicines: medicinesWithPrices,
       subtotal,
       deliveryCharges: deliveryChargesNum,
       totalAmount,
-      deliveryTime
-    });
+      deliveryTime: deliveryTime.trim()
+    };
+
+    // Only add customer if it exists
+    if (request.customer) {
+      billData.customer = request.customer;
+    }
+
+    // Create bill
+    const bill = new Bill(billData);
 
     await bill.save();
 

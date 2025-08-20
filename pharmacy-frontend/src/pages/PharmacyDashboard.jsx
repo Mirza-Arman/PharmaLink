@@ -129,11 +129,11 @@ const PharmacyDashboard = () => {
     if (!selectedRequest) return;
     
     // Validate form
-    if (billData.medicines.some(med => med.pricePerUnit <= 0)) {
-      alert('Please enter valid prices for all medicines');
+    if (billData.medicines.some(med => !med.pricePerUnit || med.pricePerUnit <= 0)) {
+      alert('Please enter valid prices for all medicines (must be greater than 0)');
       return;
     }
-    if (!billData.deliveryTime.trim()) {
+    if (!billData.deliveryTime || !billData.deliveryTime.trim()) {
       alert('Please enter delivery time');
       return;
     }
@@ -142,8 +142,23 @@ const PharmacyDashboard = () => {
       return;
     }
 
+    // Validate medicine data
+    const invalidMedicine = billData.medicines.find(med => 
+      !med.name || !med.quantity || med.quantity <= 0
+    );
+    if (invalidMedicine) {
+      alert('All medicines must have valid names and quantities');
+      return;
+    }
+
     setSubmitting(true);
     try {
+      console.log('Submitting bill data:', {
+        medicines: billData.medicines,
+        deliveryCharges: billData.deliveryCharges,
+        deliveryTime: billData.deliveryTime
+      });
+
       const response = await fetch(`http://localhost:5000/api/pharmacy/accept-request/${selectedRequest._id}`, {
         method: 'POST',
         headers: {
@@ -151,14 +166,16 @@ const PharmacyDashboard = () => {
           'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`
         },
         body: JSON.stringify({
-          medicines: billData.medicines, // always send as array
-          deliveryCharges: billData.deliveryCharges,
-          deliveryTime: billData.deliveryTime
+          medicines: billData.medicines,
+          deliveryCharges: Number(billData.deliveryCharges) || 0,
+          deliveryTime: billData.deliveryTime.trim()
         })
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Bill generated successfully:', data);
+        
         // Update local state
         setRequests(prev => prev.map(req => 
           req._id === selectedRequest._id 
@@ -167,13 +184,20 @@ const PharmacyDashboard = () => {
         ));
         setShowBillForm(false);
         setSelectedRequest(null);
+        setBillData({
+          medicines: [],
+          deliveryCharges: 0,
+          deliveryTime: ""
+        });
         alert('Request accepted and bill generated successfully!');
       } else {
-        const data = await response.json();
-        alert(data.message || 'Failed to accept request');
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        alert(errorData.message || 'Failed to accept request');
       }
     } catch (err) {
-      alert('Error accepting request');
+      console.error('Network error:', err);
+      alert('Network error: Please check your connection and try again');
     } finally {
       setSubmitting(false);
     }

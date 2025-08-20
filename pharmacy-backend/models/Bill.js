@@ -3,19 +3,19 @@ const mongoose = require('mongoose');
 const billSchema = new mongoose.Schema({
   request: { type: mongoose.Schema.Types.ObjectId, ref: 'Request', required: true },
   pharmacy: { type: mongoose.Schema.Types.ObjectId, ref: 'Pharmacy', required: true },
-  customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+  customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', default: null },
   medicines: [{
-    name: String,
-    type: String,
-    strength: String,
-    quantity: Number,
-    pricePerUnit: { type: Number, required: true },
-    totalPrice: { type: Number, required: true }
+    name: { type: String, required: true },
+    type: { type: String, default: '' },
+    strength: { type: String, default: '' },
+    quantity: { type: Number, required: true, min: 1 },
+    pricePerUnit: { type: Number, required: true, min: 0 },
+    totalPrice: { type: Number, required: true, min: 0 }
   }],
-  subtotal: { type: Number, required: true },
-  deliveryCharges: { type: Number, required: true },
-  totalAmount: { type: Number, required: true },
-  deliveryTime: { type: String, required: true }, // e.g., "2-3 hours", "Same day"
+  subtotal: { type: Number, required: true, min: 0 },
+  deliveryCharges: { type: Number, required: true, min: 0 },
+  totalAmount: { type: Number, required: true, min: 0 },
+  deliveryTime: { type: String, required: true, trim: true },
   status: { type: String, enum: ['pending', 'accepted', 'rejected', 'completed'], default: 'pending' },
   createdAt: { type: Date, default: Date.now }
 });
