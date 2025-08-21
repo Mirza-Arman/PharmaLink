@@ -12,26 +12,29 @@ import UserRequests from "./pages/UserRequests";
 import Footer from "./component/Footer";
 import Contact from "./pages/Contact";
 import TestPopup from "./pages/TestPopup";
+import About from "./pages/About";
 
 function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/buy-medicine" element={<BuyMedicine />} />
-          <Route path="/customer-auth" element={<CustomerAuth />} />
-          <Route path="/pharmacy-auth" element={<PharmacyAuth />} />
-          <Route path="/select-pharmacy" element={<SelectPharmacy />} />
-          <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
-          <Route path="/user-requests" element={<UserRequests />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/test-popup" element={<TestPopup />} />
-        </Routes>
-        <Footer />
-      </Router>
-    </AuthProvider>
+  return ( 
+<AuthProvider>
+  <Router>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/buy-medicine" element={<BuyMedicine />} />
+      <Route path="/customer-auth" element={<CustomerAuth />} />
+      <Route path="/pharmacy-auth" element={<PharmacyAuth />} />
+      <Route path="/select-pharmacy" element={<SelectPharmacy />} />
+      <Route path="/pharmacy-dashboard" element={<PharmacyDashboard />} />
+      <Route path="/user-requests" element={<UserRequests />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/test-popup" element={<TestPopup />} />
+    </Routes>
+    <Footer />
+  </Router>
+</AuthProvider>
   );
 }
 
 export default App;
+
