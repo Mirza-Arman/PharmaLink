@@ -477,8 +477,8 @@ const PharmacyDashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
     </div>
   );
 };

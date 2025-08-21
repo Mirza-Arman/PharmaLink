@@ -9,8 +9,8 @@ const UserRequests = () => {
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedBill, setSelectedBill] = useState(null);
-  const [showBillPopup, setShowBillPopup] = useState(false);
+  const [expandedRequest, setExpandedRequest] = useState(null);
+  const [selectedResponseByRequest, setSelectedResponseByRequest] = useState({});
 
   useEffect(() => {
     if (!customer || !customer._id) {
@@ -18,6 +18,20 @@ const UserRequests = () => {
       setLoading(false);
       return;
     }
+
+    // Debug: Check all bills in database
+    fetch("http://localhost:5000/api/customer/debug/bills", {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('customer_token')}`
+      }
+    })
+    .then(res => res.json())
+    .then(debugData => {
+      console.log('Debug - All bills in database:', debugData);
+    })
+    .catch(err => {
+      console.error('Debug endpoint error:', err);
+    });
 
     // Fetch requests and bills
     Promise.all([
@@ -34,24 +48,25 @@ const UserRequests = () => {
     ])
     .then(responses => Promise.all(responses.map(res => res.json())))
     .then(([requestsData, billsData]) => {
+      console.log('Fetched requests:', requestsData);
+      console.log('Fetched bills:', billsData);
       setRequests(requestsData);
       setBills(billsData);
       setLoading(false);
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error('Error fetching data:', error);
       setError("Failed to load data.");
       setLoading(false);
     });
   }, [customer]);
 
-  const handleViewBill = (bill) => {
-    setSelectedBill(bill);
-    setShowBillPopup(true);
+  const handleViewResponse = (requestId) => {
+    setExpandedRequest(expandedRequest === requestId ? null : requestId);
   };
 
-  const closeBillPopup = () => {
-    setShowBillPopup(false);
-    setSelectedBill(null);
+  const handleSelectResponse = (requestId, response) => {
+    setSelectedResponseByRequest(prev => ({ ...prev, [requestId]: response }));
   };
 
   const getStatusColor = (status) => {
@@ -64,167 +79,321 @@ const UserRequests = () => {
     }
   };
 
+  const getResponseCount = (request) => {
+    // Count bills for this specific request
+    const requestBills = bills.filter(bill => {
+      // Handle both string and ObjectId comparisons
+      const billRequestId = typeof bill.request === 'string' ? bill.request : bill.request._id;
+      const requestId = typeof request._id === 'string' ? request._id : request._id.toString();
+      return billRequestId === requestId;
+    });
+    console.log(`Request ${request._id}: Found ${requestBills.length} bills`);
+    return requestBills.length;
+  };
+
+  const getRequestStatus = (request) => {
+    const responseCount = getResponseCount(request);
+    if (responseCount === 0) return 'pending';
+    if (responseCount > 0) return 'responded';
+    return 'pending';
+  };
+
+  // Get actual pharmacy responses (bills) for a specific request
+  const getPharmacyResponses = (request) => {
+    const requestBills = bills.filter(bill => {
+      // Handle both string and ObjectId comparisons
+      const billRequestId = typeof bill.request === 'string' ? bill.request : bill.request._id;
+      const requestId = typeof request._id === 'string' ? request._id : request._id.toString();
+      return billRequestId === requestId;
+    });
+    console.log(`Getting pharmacy responses for request ${request._id}:`, requestBills);
+    
+    return requestBills.map(bill => ({
+      pharmacyId: bill.pharmacy._id,
+      pharmacyName: bill.pharmacy.pharmacyName,
+      pharmacy: bill.pharmacy, // Include full pharmacy object for address and phone
+      status: bill.status,
+      price: bill.totalAmount,
+      deliveryCharges: bill.deliveryCharges,
+      deliveryTime: bill.deliveryTime,
+      medicines: bill.medicines,
+      billId: bill._id,
+      createdAt: bill.createdAt
+    }));
+  };
+
+  const handleAcceptOffer = async (billId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/customer/accept-bill/${billId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('customer_token')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Bill accepted successfully:', data);
+        
+        // Refresh the data to show updated status
+        window.location.reload();
+        alert('Offer accepted successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to accept offer');
+      }
+    } catch (err) {
+      console.error('Error accepting offer:', err);
+      alert('Error accepting offer. Please try again.');
+    }
+  };
+
+  const handleContactPharmacy = (pharmacyPhone) => {
+    if (pharmacyPhone && pharmacyPhone !== 'N/A') {
+      window.open(`tel:${pharmacyPhone}`, '_self');
+    } else {
+      alert('Phone number not available for this pharmacy.');
+    }
+  };
+
+  const formatCurrency = (num) => new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', currencyDisplay: 'code', minimumFractionDigits: 2 }).format(Number(num || 0));
+
   return (
     <div className="buy-medicine-bg">
       <Header />
       <div className="buy-medicine-inner form-visible">
-        <h2 className="buy-medicine-title">My Requests & Bills</h2>
+        <h2 className="buy-medicine-title">My Requests</h2>
         
-        {loading && <div>Loading...</div>}
+        {loading && <div className="loading-msg">Loading your requests...</div>}
         {error && <div className="error-msg">{error}</div>}
         
-        {!loading && !error && (
-          <>
-            {/* Requests Section */}
-            <div className="section-container">
-              <h3>My Requests</h3>
-              {requests.length === 0 ? (
-                <div className="no-data">No requests found.</div>
-              ) : (
-                <div className="requests-grid">
-                  {requests.map((req, idx) => (
-                    <div className="request-card" key={req._id || idx}>
-                      <div className="request-header">
-                        <h4>Request #{req._id.slice(-6)}</h4>
-                        <span 
-                          className="status-badge"
-                          style={{ backgroundColor: getStatusColor(req.status) }}
-                        >
-                          {req.status}
-                        </span>
-                      </div>
-                      <div className="request-details">
-                        <p><strong>Date:</strong> {new Date(req.createdAt).toLocaleDateString()}</p>
-                        <p><strong>Medicines:</strong> {req.medicines.length} items</p>
-                        <p><strong>City:</strong> {req.city}</p>
-                        <p><strong>Address:</strong> {req.address}</p>
-                      </div>
-                      {req.bill && (
-                        <div className="bill-info">
-                          <p><strong>Bill Generated:</strong> Yes</p>
+        {!loading && !error && requests.length === 0 && (
+          <div className="no-requests">
+            <p>No requests found.</p>
+            <p>Start by ordering medicines from the Buy Medicine page.</p>
+          </div>
+        )}
+        
+        {!loading && !error && requests.length > 0 && (
+          <div className="user-requests-container">
+            {requests.map((req, idx) => {
+              const isExpanded = expandedRequest === req._id;
+              const pharmacyResponses = getPharmacyResponses(req);
+              const responseCount = pharmacyResponses.length;
+              const requestStatus = responseCount > 0 ? 'responded' : 'pending';
+
+              // Determine selected response for this request (default to first)
+              const selectedResponse = selectedResponseByRequest[req._id] || pharmacyResponses[0];
+              
+              return (
+                <div 
+                  key={req._id || idx} 
+                  className={`user-request-card ${isExpanded ? 'expanded' : ''}`}
+                >
+                  <div className="request-main-content">
+                    {/* Left Side - Conditional: default details OR pharmacies list when expanded */}
+                    <div className="request-left-side">
+                      {!isExpanded ? (
+                        <>
+                          <div className="request-header">
+                            <h3>Request #{req._id.slice(-6)}</h3>
+                            <span className="request-date">
+                              {new Date(req.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          
+                          <div className="pharmacy-list-section">
+                            <h4>Pharmacies Requested</h4>
+                            <div className="pharmacy-list">
+                              {req.selectedPharmacies && req.selectedPharmacies.length > 0 ? (
+                                req.selectedPharmacies.map((pharmacyId, index) => (
+                                  <div key={index} className="pharmacy-item">
+                                    <span className="pharmacy-name">
+                                      Pharmacy {index + 1}
+                                    </span>
+                                    <span className="pharmacy-id">ID: {pharmacyId.slice(-6)}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="no-pharmacies">
+                                  No pharmacies selected
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="medicine-summary">
+                            <h4>Medicine Summary</h4>
+                            <div className="medicine-count">
+                              {req.medicines.length} medicine(s) requested
+                            </div>
+                            <div className="medicine-preview">
+                              {req.medicines.slice(0, 3).map((med, index) => (
+                                <span key={index} className="medicine-tag">
+                                  {med.name}
+                                </span>
+                              ))}
+                              {req.medicines.length > 3 && (
+                                <span className="medicine-tag more">
+                                  +{req.medicines.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="responses-left-list">
+                          {pharmacyResponses.map((response, index) => {
+                            const isSelected = selectedResponse && response.billId === selectedResponse.billId;
+                            return (
+                              <div 
+                                key={index} 
+                                className={`pharmacy-list-item ${isSelected ? 'selected' : ''}`}
+                              >
+                                <div className="pharmacy-list-item-main">
+                                  <div className="pharmacy-list-name">{response.pharmacyName}</div>
+                                  <div className="pharmacy-list-meta">{response.pharmacy?.address || 'N/A'}</div>
+                                  <div className="pharmacy-list-meta">{response.pharmacy?.phone || 'N/A'}</div>
+                                </div>
+                                <button 
+                                  className="view-response-btn small"
+                                  onClick={() => handleSelectResponse(req._id, response)}
+                                >
+                                  View
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            {/* Bills Section */}
-            <div className="section-container">
-              <h3>My Bills</h3>
-              {bills.length === 0 ? (
-                <div className="no-data">No bills found.</div>
-              ) : (
-                <div className="bills-grid">
-                  {bills.map((bill, idx) => (
-                    <div className="bill-card" key={bill._id || idx}>
-                      <div className="bill-header">
-                        <h4>Bill #{bill._id.slice(-6)}</h4>
-                        <span 
-                          className="status-badge"
-                          style={{ backgroundColor: getStatusColor(bill.status) }}
-                        >
-                          {bill.status}
-                        </span>
-                      </div>
-                      <div className="bill-details">
-                        <p><strong>Pharmacy:</strong> {bill.pharmacy?.pharmacyName || 'N/A'}</p>
-                        <p><strong>Date:</strong> {new Date(bill.createdAt).toLocaleDateString()}</p>
-                        <p><strong>Total Amount:</strong> ₹{bill.totalAmount.toFixed(2)}</p>
-                        <p><strong>Delivery Time:</strong> {bill.deliveryTime}</p>
-                      </div>
-                      <button 
-                        className="view-bill-btn"
-                        onClick={() => handleViewBill(bill)}
-                      >
-                        View Bill Details
-                      </button>
+                    {/* Right Side - Conditional: status panel OR read-only bill form when expanded */}
+                    <div className="request-right-side">
+                      {!isExpanded ? (
+                        <div className="response-status">
+                          <div className="status-indicator">
+                            <span 
+                              className="status-dot"
+                              style={{ backgroundColor: getStatusColor(requestStatus) }}
+                            ></span>
+                            <span className="status-text">
+                              {requestStatus === 'responded' ? 'Responses Received' : 'Pending Responses'}
+                            </span>
+                          </div>
+                          
+                          <div className="response-count">
+                            <span className="count-number">{responseCount}</span>
+                            <span className="count-label">pharmacy responses</span>
+                          </div>
+                          
+                          <div className="response-actions">
+                            <button 
+                              className="view-response-btn"
+                              onClick={() => {
+                                handleViewResponse(req._id);
+                                if (!selectedResponseByRequest[req._id] && pharmacyResponses[0]) {
+                                  handleSelectResponse(req._id, pharmacyResponses[0]);
+                                }
+                              }}
+                              disabled={responseCount === 0}
+                            >
+                              {isExpanded ? 'Hide Responses' : 'View Responses'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="responses-right-form">
+                          {selectedResponse ? (
+                            <div className="bill-details-form">
+                              <h4 className="form-title">Response Details</h4>
+
+                              <div className="form-row">
+                                <label>Pharmacy</label>
+                                <input type="text" value={selectedResponse.pharmacyName} readOnly />
+                              </div>
+
+                              <div className="form-row grid-2">
+                                <div>
+                                  <label>Medicine Cost</label>
+                                  <input type="text" value={formatCurrency(selectedResponse.price - (selectedResponse.deliveryCharges || 0))} readOnly />
+                                </div>
+                                <div>
+                                  <label>Delivery Cost</label>
+                                  <input type="text" value={formatCurrency(selectedResponse.deliveryCharges || 0)} readOnly />
+                                </div>
+                              </div>
+
+                              <div className="form-row">
+                                <label>Total Cost</label>
+                                <input type="text" value={formatCurrency(selectedResponse.price)} readOnly />
+                              </div>
+
+                              <div className="form-row">
+                                <label>Delivery Time</label>
+                                <input type="text" value={selectedResponse.deliveryTime} readOnly />
+                              </div>
+
+                              <div className="form-row">
+                                <label>Medicines</label>
+                                <div className="medicine-table-container">
+                                  <table className="medicine-popup-table">
+                                    <thead>
+                                      <tr>
+                                        <th>Medicine Name</th>
+                                        <th>Type</th>
+                                        <th>Strength</th>
+                                        <th>Quantity</th>
+                                        <th>Price per Unit</th>
+                                        <th>Total Price</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {selectedResponse.medicines.map((med, medIndex) => (
+                                        <tr key={medIndex}>
+                                          <td>{med.name}</td>
+                                          <td>{med.type || '-'}</td>
+                                          <td>{med.strength || '-'}</td>
+                                          <td>{med.quantity}</td>
+                                          <td>{formatCurrency(med.pricePerUnit)}</td>
+                                          <td>{formatCurrency(med.totalPrice)}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              <div className="pharmacy-response-actions">
+                                <button 
+                                  className="action-btn accept-response-btn"
+                                  onClick={() => handleAcceptOffer(selectedResponse.billId)}
+                                >
+                                  Accept Offer
+                                </button>
+                                <button 
+                                  className="action-btn contact-pharmacy-btn"
+                                  onClick={() => handleContactPharmacy(selectedResponse.pharmacy?.phone)}
+                                >
+                                  Contact Pharmacy
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="no-selection">Select a pharmacy on the left to view details</div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Removed bottom expanded section to keep form on the right when expanded */}
                 </div>
-              )}
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </div>
-
-      {/* Bill Details Popup */}
-      {showBillPopup && selectedBill && (
-        <div className="medicine-popup-overlay" onClick={closeBillPopup}>
-          <div className="medicine-popup bill-details-popup" onClick={(e) => e.stopPropagation()}>
-            <div className="medicine-popup-header">
-              <h3>Bill Details</h3>
-              <button className="close-popup-btn" onClick={closeBillPopup}>×</button>
-            </div>
-            
-            <div className="medicine-popup-content">
-              <div className="pharmacy-info-section">
-                <h4>Pharmacy Information</h4>
-                <div className="pharmacy-details">
-                  <p><strong>Name:</strong> {selectedBill.pharmacy?.pharmacyName || 'N/A'}</p>
-                  <p><strong>Address:</strong> {selectedBill.pharmacy?.address || 'N/A'}</p>
-                  <p><strong>Phone:</strong> {selectedBill.pharmacy?.phone || 'N/A'}</p>
-                  <p><strong>Bill Date:</strong> {new Date(selectedBill.createdAt).toLocaleString()}</p>
-                </div>
-              </div>
-
-              <div className="medicine-list-section">
-                <h4>Medicine Details</h4>
-                <div className="medicine-table-container">
-                  <table className="medicine-popup-table">
-                    <thead>
-                      <tr>
-                        <th>Medicine Name</th>
-                        <th>Type</th>
-                        <th>Strength</th>
-                        <th>Quantity</th>
-                        <th>Price per Unit</th>
-                        <th>Total Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedBill.medicines.map((med, i) => (
-                        <tr key={i}>
-                          <td>{med.name}</td>
-                          <td>{med.type || '-'}</td>
-                          <td>{med.strength || '-'}</td>
-                          <td>{med.quantity}</td>
-                          <td>₹{med.pricePerUnit.toFixed(2)}</td>
-                          <td>₹{med.totalPrice.toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="bill-summary">
-                <h4>Bill Summary</h4>
-                <div className="summary-row">
-                  <span>Subtotal:</span>
-                  <span>₹{selectedBill.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Delivery Charges:</span>
-                  <span>₹{selectedBill.deliveryCharges.toFixed(2)}</span>
-                </div>
-                <div className="summary-row total-row">
-                  <span><strong>Total Amount:</strong></span>
-                  <span><strong>₹{selectedBill.totalAmount.toFixed(2)}</strong></span>
-                </div>
-                <div className="delivery-info">
-                  <p><strong>Delivery Time:</strong> {selectedBill.deliveryTime}</p>
-                </div>
-              </div>
-
-              <div className="popup-actions">
-                <button className="action-btn close-btn" onClick={closeBillPopup}>Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

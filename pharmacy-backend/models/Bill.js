@@ -16,7 +16,7 @@ const billSchema = new mongoose.Schema({
   deliveryCharges: { type: Number, required: true, min: 0 },
   totalAmount: { type: Number, required: true, min: 0 },
   deliveryTime: { type: String, required: true, trim: true },
-  status: { type: String, enum: ['pending', 'accepted', 'rejected', 'completed'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'generated', 'accepted', 'rejected', 'completed'], default: 'generated' },
   createdAt: { type: Date, default: Date.now }
 });
 

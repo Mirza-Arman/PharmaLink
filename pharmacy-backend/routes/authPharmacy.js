@@ -36,8 +36,21 @@ router.get('/pharmacies', getPharmacies);
 // Get all buyer requests
 router.get('/requests', async (req, res) => {
   try {
-    const requests = await Request.find().populate('customer', 'email');
-    res.json(requests);
+    const requests = await Request.find()
+      .populate('customer', 'email');
+    
+    // For each request, also fetch bills to show pharmacy-specific status
+    const requestsWithBills = await Promise.all(requests.map(async (request) => {
+      const bills = await Bill.find({ request: request._id })
+        .populate('pharmacy', 'pharmacyName');
+      
+      return {
+        ...request.toObject(),
+        bills: bills
+      };
+    }));
+    
+    res.json(requestsWithBills);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -66,6 +79,21 @@ router.post('/accept-request/:requestId', auth('pharmacy'), async (req, res) => 
     }
     if (request.status !== 'pending') {
       return res.status(400).json({ message: 'Request is not pending' });
+    }
+
+    // Ensure this pharmacy is among the selected pharmacies for the request
+    const isSelected = Array.isArray(request.selectedPharmacies) && request.selectedPharmacies.includes(req.user.id.toString());
+    if (!isSelected) {
+      return res.status(403).json({ message: 'You are not authorized to generate a bill for this request' });
+    }
+
+    // Check if this pharmacy has already generated a bill for this request
+    const existingBill = await Bill.findOne({ 
+      request: requestId, 
+      pharmacy: req.user.id 
+    });
+    if (existingBill) {
+      return res.status(400).json({ message: 'You have already generated a bill for this request' });
     }
 
     // Validate input data
@@ -117,7 +145,8 @@ router.post('/accept-request/:requestId', auth('pharmacy'), async (req, res) => 
       subtotal,
       deliveryCharges: deliveryChargesNum,
       totalAmount,
-      deliveryTime: deliveryTime.trim()
+      deliveryTime: deliveryTime.trim(),
+      status: 'generated' // Set bill status as generated, not accepted
     };
 
     // Only add customer if it exists
@@ -127,46 +156,38 @@ router.post('/accept-request/:requestId', auth('pharmacy'), async (req, res) => 
 
     // Create bill
     const bill = new Bill(billData);
-
     await bill.save();
 
-    // Update request status
-    request.status = 'accepted';
-    request.acceptedBy = req.user.id;
-    request.bill = bill._id;
-    await request.save();
+    // Don't update request status - keep it pending so other pharmacies can also generate bills
+    // The request status will only change when customer accepts a specific bill
 
     res.status(201).json({ 
-      message: 'Request accepted and bill generated', 
+      message: 'Bill generated successfully', 
       bill,
       request 
     });
   } catch (err) {
-    console.error('Error accepting request:', err);
+    console.error('Error generating bill:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-// Reject request
+// Reject request (pharmacy declines to bid). Do not change global request status.
 router.post('/reject-request/:requestId', auth('pharmacy'), async (req, res) => {
   try {
     const { requestId } = req.params;
-    
     const request = await Request.findById(requestId);
     if (!request) {
       return res.status(404).json({ message: 'Request not found' });
     }
-    if (request.status !== 'pending') {
-      return res.status(400).json({ message: 'Request is not pending' });
-    }
 
-    request.status = 'rejected';
-    request.acceptedBy = req.user.id;
-    await request.save();
+    // In the new model, a pharmacy "rejecting" simply means they won't bid.
+    // We intentionally do NOT change the global request status here
+    // to allow other pharmacies to continue bidding.
 
-    res.json({ message: 'Request rejected', request });
+    return res.json({ message: 'You have declined to bid on this request' });
   } catch (err) {
-    console.error('Error rejecting request:', err);
+    console.error('Error declining request:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
