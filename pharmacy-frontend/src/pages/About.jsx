@@ -26,30 +26,42 @@ const whyChooseUs = [
 const About = () => (
   <div className="about-page">
     <Header />
-    <section className="about-hero-bg">
-      <div className="about-hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGhhcm1hY3l8ZW58MHx8MHx8fDA%3D')" }} />
+    {/* Hero Section */}
+    <section className="about-hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=1200&auto=format&fit=crop&q=80')" }}>
       <div className="about-hero-content">
-        <h1>About MediLink</h1>
-        <p>
+        <h1>MediLink</h1>
+        <p style={{ fontSize: '1.3rem', fontStyle: 'italic', color: '#000', marginBottom: 16 }}>
+          "Connecting you to trusted pharmacies, wherever you are."
+        </p>
+        <p style={{ maxWidth: 810, margin: '0 auto', color: '#000' }}>
           MediLink is your digital bridge to local pharmacies. We make it easy to request medicines, compare offers, and get your orders delivered quickly and safely—all from the comfort of your home.
         </p>
       </div>
     </section>
 
+    {/* Mission & Vision */}
     <section className="about-section bg">
-      <h2>Our Mission</h2>
-      <p>To empower communities with seamless, safe, and transparent access to essential medicines through technology.</p>
-      <h2>Our Vision</h2>
-      <p>To become the most trusted digital healthcare platform, connecting people to pharmacies everywhere.</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, justifyContent: 'center' }}>
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <h2>Our Mission</h2>
+          <p>To empower communities with seamless, safe, and transparent access to essential medicines through technology.</p>
+        </div>
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <h2>Our Vision</h2>
+          <p>To become the most trusted digital healthcare platform, connecting people to pharmacies everywhere.</p>
+        </div>
+      </div>
     </section>
 
+    {/* Story */}
     <section className="about-section">
       <h2>Our Story</h2>
-      <p>
+      <p style={{ fontSize: '1.1rem', color: '#444' }}>
         MediLink was born out of a simple realization: many people struggle to find the medicines they need, especially during emergencies or after hours. Our founders experienced this firsthand when a family member couldn’t get timely access to essential medication. This inspired us to create a platform that connects customers with multiple pharmacies, ensuring availability, price transparency, and peace of mind.
       </p>
     </section>
 
+    {/* Features */}
     <section className="about-section bg">
       <h2>Key Features</h2>
       <ul>
@@ -59,19 +71,21 @@ const About = () => (
       </ul>
     </section>
 
+    {/* Team */}
     <section className="about-section">
       <h2>Meet the Team</h2>
       <div className="about-team">
         {team.map((member, i) => (
           <div key={i} className="about-team-card">
-            <img src={member.img} alt={member.name + " photo"} className="team-photo" />
-            <div className="name">{member.name}</div>
-            <div className="role">{member.role}</div>
+            <img src={member.img} alt={member.name + " photo"} className="team-photo" style={{ borderRadius: '50%', width: 90, height: 90, objectFit: 'cover', marginBottom: 12, boxShadow: '0 2px 8px #0001' }} />
+            <div className="name" style={{ fontWeight: 600, fontSize: '1.15rem', marginBottom: 4 }}>{member.name}</div>
+            <div className="role" style={{ color: '#2ca7a0', fontWeight: 500 }}>{member.role}</div>
           </div>
         ))}
       </div>
     </section>
 
+    {/* Why Choose Us */}
     <section className="about-section bg">
       <h2>Why Choose Us?</h2>
       <ul>
@@ -81,6 +95,7 @@ const About = () => (
       </ul>
     </section>
 
+    {/* Contact */}
     <section className="about-contact">
       <h2>Contact Us</h2>
       <p>Have questions or want to learn more? <Link to="/contact">Reach out to our team</Link> and we’ll be happy to help!</p>
