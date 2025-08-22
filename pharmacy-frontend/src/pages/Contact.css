@@ -46,6 +46,10 @@
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* Makes text visible on image */
   margin-bottom: 40px;
 }
+.contact-hero-content h1:hover {
+  transform: scale(1.05) translateY(-3px);
+  font-size: 3.8rem;
+}
 
 .contact-hero-content p {
   
