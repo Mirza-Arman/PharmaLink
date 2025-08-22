@@ -37,7 +37,7 @@ const SelectPharmacy = () => {
     <div className="buy-medicine-bg">
       <div className="buy-medicine-container">
         <div className="buy-medicine-inner form-visible">
-          <h2 className="buy-medicine-title">Select Pharmacy</h2>
+          <h1 style={{ textAlign: 'center', fontWeight: 900, fontSize: 32, color: '#2ca7a0', marginBottom: 32 }}>Select a Pharmacy</h1>
           <div className="form-section">
             <label className="form-label" htmlFor="city">City</label>
             <select
@@ -61,34 +61,66 @@ const SelectPharmacy = () => {
           {!loading && pharmacies.length > 0 && (
             <div className="form-section">
               <label className="form-label">Available Pharmacies</label>
-              <div className="pharmacy-grid">
-                {pharmacies.map(pharmacy => (
-                  <div
-                    key={pharmacy._id}
-                    className="pharmacy-card"
-                  >
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedPharmacies.includes(pharmacy._id)}
-                        onChange={e => {
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {pharmacies.map(pharmacy => {
+                  const isSelected = selectedPharmacies.includes(pharmacy._id);
+                  return (
+                    <div
+                      key={pharmacy._id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        justifyContent: 'space-between',
+                        background: isSelected ? '#eaf7f6' : '#fff',
+                        border: '1.5px solid #2ca7a0',
+                        borderRadius: 10,
+                        padding: '18px 28px',
+                        boxShadow: isSelected ? '0 2px 12px #b2f0e6' : 'none',
+                        transition: 'all 0.18s cubic-bezier(.4,1.4,.6,1)',
+                        position: 'relative',
+                        minHeight: 110
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: 20, color: '#2ca7a0', marginBottom: 2 }}>{pharmacy.pharmacyName}</div>
+                        <div style={{ fontSize: 15, color: '#333' }}><b>Address:</b> {pharmacy.address}</div>
+                        <div style={{ fontSize: 15, color: '#333' }}><b>Phone Number:</b> {pharmacy.phone || 'N/A'}</div>
+                        <div style={{ fontSize: 15, color: '#333' }}><b>Email:</b> {pharmacy.email || 'N/A'}</div>
+                      </div>
+                      <button
+                        style={{
+                          position: 'absolute',
+                          right: 28,
+                          bottom: 18,
+                          background: isSelected ? '#888' : '#2ca7a0',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '10px 28px',
+                          fontWeight: 700,
+                          fontSize: 16,
+                          minWidth: 120,
+                          cursor: 'pointer',
+                          transition: 'background 0.2s',
+                          boxShadow: '0 2px 8px rgba(44,167,160,0.08)'
+                        }}
+                        onClick={() => {
                           setSelectedPharmacies(prev =>
-                            e.target.checked
-                              ? [...prev, pharmacy._id]
-                              : prev.filter(id => id !== pharmacy._id)
+                            isSelected
+                              ? prev.filter(id => id !== pharmacy._id)
+                              : [...prev, pharmacy._id]
                           );
                         }}
-                      />
-                      <span><b>{pharmacy.pharmacyName}</b></span>
-                    </label>
-                    <div>{pharmacy.address}</div>
-                    <div>{pharmacy.email}</div>
-                  </div>
-                ))}
+                      >
+                        {isSelected ? 'Remove' : 'Select'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <button
                 className="submit-btn"
-                style={{ marginTop: 16 }}
+                style={{ marginTop: 24 }}
                 disabled={selectedPharmacies.length === 0}
                 onClick={async () => {
                   // Send request to backend

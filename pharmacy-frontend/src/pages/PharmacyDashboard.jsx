@@ -17,6 +17,9 @@ const PharmacyDashboard = () => {
     deliveryTime: ""
   });
   const [submitting, setSubmitting] = useState(false);
+  const [showBillDetailsPopup, setShowBillDetailsPopup] = useState(false);
+  const [billDetails, setBillDetails] = useState(null);
+  const [loadingBillDetails, setLoadingBillDetails] = useState(false);
 
   useEffect(() => {
     if (!pharmacy || !pharmacy._id) {
@@ -203,6 +206,37 @@ const PharmacyDashboard = () => {
     }
   };
 
+  const openBillDetails = async (billId) => {
+    if (!billId) return;
+    setShowBillDetailsPopup(true);
+    setLoadingBillDetails(true);
+    try {
+      const headers = { 'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}` };
+      let res = await fetch(`http://localhost:5000/api/pharmacy/bills/${billId}`, { headers });
+      if (!res.ok) {
+        // Fallback if different route
+        res = await fetch(`http://localhost:5000/api/bills/${billId}`, { headers });
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setBillDetails(data.bill || data);
+      } else {
+        setBillDetails(null);
+        alert('Failed to load bill details');
+      }
+    } catch (e) {
+      setBillDetails(null);
+      alert('Network error while loading bill details');
+    } finally {
+      setLoadingBillDetails(false);
+    }
+  };
+
+  const closeBillDetails = () => {
+    setShowBillDetailsPopup(false);
+    setBillDetails(null);
+  };
+
   const closeBillForm = () => {
     setShowBillForm(false);
     setSelectedRequest(null);
@@ -236,7 +270,7 @@ const PharmacyDashboard = () => {
           {!loading && requests.length > 0 && (
             <div>
               {requests.map((req, idx) => (
-                <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24 }}>
+                <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 48 }}>
                   {/* Left column: Customer data */}
                   <div style={{ flex: 1, minWidth: 180 }}>
                     <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>
@@ -268,7 +302,7 @@ const PharmacyDashboard = () => {
                           fontWeight: 'bold',
                           textTransform: 'uppercase'
                         }}>
-                          {req.status}
+                          {req.status === 'accepted' ? 'Bill Generated' : req.status}
                         </span>
                       )}
                     </div>
@@ -278,8 +312,30 @@ const PharmacyDashboard = () => {
                     <div><b>Request ID:</b> {req._id}</div>
                     <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
                     <div><b>Total Medicines:</b> {req.medicines.length}</div>
-                    <div><b>Status:</b> <span style={{ color: getStatusColor(req.status), fontWeight: 'bold' }}>{req.status}</span></div>
+                    <div><b>Status:</b> <span style={{ color: getStatusColor(req.status), fontWeight: 'bold' }}>{req.status === 'accepted' ? 'Bill Generated' : req.status}</span></div>
                   </div>
+
+                  {/* Left-bottom View button when bill is generated */}
+                  {req.status === 'accepted' && req.bill && (
+                    <button
+                      onClick={() => openBillDetails(req.bill)}
+                      style={{
+                        position: 'absolute',
+                        left: 16,
+                        bottom: 12,
+                        background: '#1976d2',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        fontWeight: 600
+                      }}
+                    >
+                      View
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -479,6 +535,66 @@ const PharmacyDashboard = () => {
             </div>
             </div>
           )}
+
+        {/* Bill Details Popup */}
+        {showBillDetailsPopup && (
+          <div className="medicine-popup-overlay" onClick={closeBillDetails}>
+            <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="medicine-popup-header">
+                <h3>Bill Details</h3>
+                <button className="close-popup-btn" onClick={closeBillDetails}>×</button>
+              </div>
+              <div className="medicine-popup-content">
+                {loadingBillDetails && <div>Loading bill details...</div>}
+                {!loadingBillDetails && billDetails && (
+                  <>
+                    <div className="customer-info-section">
+                      <h4>Summary</h4>
+                      <div className="customer-details">
+                        <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
+                        <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
+                        <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
+                        <p><strong>Status:</strong> {billDetails.status === 'accepted' ? 'Bill Generated' : (billDetails.status || '-')}</p>
+                      </div>
+                    </div>
+                    <div className="medicine-list-section">
+                      <h4>Medicines</h4>
+                      <div className="medicine-table-container">
+                        <table className="medicine-popup-table">
+                          <thead>
+                            <tr>
+                              <th>Medicine Name</th>
+                              <th>Type</th>
+                              <th>Strength</th>
+                              <th>Quantity</th>
+                              <th>Price per Unit</th>
+                              <th>Total Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(billDetails.medicines || []).map((med, i) => (
+                              <tr key={i}>
+                                <td>{med.name}</td>
+                                <td>{med.type || '-'}</td>
+                                <td>{med.strength || '-'}</td>
+                                <td>{med.quantity}</td>
+                                <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
+                                <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {!loadingBillDetails && !billDetails && (
+                  <div>Bill details not available.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

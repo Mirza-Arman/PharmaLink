@@ -322,13 +322,25 @@ const UserRequests = () => {
               const isIgnored = acceptedBill && acceptedBill.billId !== selectedPharmacyBill.billId;
               return (
                 <div className="bill-details-form" style={{ background: '#f8fafd', borderRadius: 12, padding: 32, boxShadow: '0 2px 12px #b2f0e6', animation: 'fadeInRow 0.5s' }}>
-                  <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 8, color: '#2ca7a0', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span>{selectedPharmacyBill.pharmacyName}</span>
-                    <span style={{ fontSize: 15, color: '#666', fontWeight: 400 }}>{selectedPharmacyBill.pharmacy?.address || 'N/A'}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+                    {/* Left Side: Pharmacy Name and Delivery Time */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 900, fontSize: 26, marginBottom: 8, color: '#2ca7a0', letterSpacing: 1 }}>
+                        {selectedPharmacyBill.pharmacyName}
                   </div>
-                  <div style={{ color: '#666', fontSize: 15, marginBottom: 12 }}>{selectedPharmacyBill.pharmacy?.phone || 'N/A'}</div>
-                  <div style={{ marginBottom: 18, fontSize: 15 }}>
+                      <div style={{ fontSize: 16, color: '#333', marginBottom: 4 }}>
                     <b>Delivery Time:</b> {selectedPharmacyBill.deliveryTime}
+                      </div>
+                    </div>
+                    {/* Right Side: Address and Phone */}
+                    <div style={{ flex: 1, textAlign: 'right' }}>
+                      <div style={{ fontSize: 15, color: '#666', marginBottom: 4 }}>
+                        <b>Address:</b> {selectedPharmacyBill.pharmacy?.address || 'N/A'}
+                      </div>
+                      <div style={{ fontSize: 15, color: '#666' }}>
+                        <b>Phone:</b> {selectedPharmacyBill.pharmacy?.phone || 'N/A'}
+                      </div>
+                    </div>
                   </div>
                   <div className="medicine-table-container" style={{ marginBottom: 18 }}>
                     <table className="medicine-popup-table" style={{ width: '100%' }}>
@@ -393,6 +405,14 @@ const UserRequests = () => {
 };
 
 export default UserRequests;
+
+
+
+
+
+
+
+
 
 
 
