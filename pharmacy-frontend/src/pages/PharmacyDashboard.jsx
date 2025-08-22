@@ -296,15 +296,6 @@ const PharmacyDashboard = () => {
                           View Medicine List
                         </button>
                       )}
-                      {req.status !== 'pending' && (
-                        <span style={{ 
-                          color: getStatusColor(req.status), 
-                          fontWeight: 'bold',
-                          textTransform: 'uppercase'
-                        }}>
-                          {req.status === 'accepted' ? 'Bill Generated' : req.status}
-                        </span>
-                      )}
                     </div>
                   </div>
                   {/* Right column: Basic request info */}

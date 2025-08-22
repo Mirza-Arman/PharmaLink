@@ -205,4 +205,25 @@ router.get('/bills', auth('pharmacy'), async (req, res) => {
   }
 });
 
+// Get a single bill by ID for the logged-in pharmacy
+router.get('/bills/:billId', auth('pharmacy'), async (req, res) => {
+  try {
+    const { billId } = req.params;
+    const bill = await Bill.findById(billId)
+      .populate('request')
+      .populate('customer', 'email name')
+      .populate('pharmacy', 'pharmacyName address phone');
+    if (!bill) {
+      return res.status(404).json({ message: 'Bill not found' });
+    }
+    // Ensure the bill belongs to the logged-in pharmacy
+    if (bill.pharmacy._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to view this bill' });
+    }
+    res.json({ bill });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 module.exports = router; 
