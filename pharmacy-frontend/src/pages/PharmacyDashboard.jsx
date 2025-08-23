@@ -58,6 +58,40 @@ const PharmacyDashboard = () => {
     }
   };
 
+  // Function to refresh requests data
+  const refreshRequestsData = async () => {
+    if (!pharmacy || !pharmacy._id) return;
+    
+    try {
+      const response = await fetch("http://localhost:5000/api/pharmacy/requests", {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Refreshed requests data:', data);
+        const filtered = data.filter(req => req.selectedPharmacies && req.selectedPharmacies.includes(pharmacy._id));
+        console.log('Refreshed filtered requests:', filtered);
+        setRequests(filtered);
+        
+        // Recalculate dashboard stats
+        let totalRequests = filtered.length;
+        let billsGenerated = 0, confirmed = 0, pending = 0, ignored = 0;
+        filtered.forEach(req => {
+          if (req.status === 'accepted') billsGenerated++;
+          if (req.status === 'completed') confirmed++;
+          if (req.status === 'pending') pending++;
+          if (req.status === 'rejected') ignored++;
+        });
+        setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });
+      }
+    } catch (err) {
+      console.error('Failed to refresh requests data:', err);
+    }
+  };
+
   // Function to filter requests based on active filter
   const getFilteredRequests = () => {
     if (activeFilter === 'all') return requests;
@@ -109,10 +143,21 @@ const PharmacyDashboard = () => {
     // Fetch pharmacy profile
     fetchPharmacyProfile();
     
-    fetch("http://localhost:5000/api/pharmacy/requests")
-      .then(res => res.json())
+    fetch("http://localhost:5000/api/pharmacy/requests", {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
+        console.log('Fetched requests data:', data);
         const filtered = data.filter(req => req.selectedPharmacies && req.selectedPharmacies.includes(pharmacy._id));
+        console.log('Filtered requests for this pharmacy:', filtered);
         setRequests(filtered);
         setLoading(false);
         // Calculate dashboard stats
@@ -126,27 +171,73 @@ const PharmacyDashboard = () => {
         });
         setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching requests:', error);
         setError("Failed to load requests.");
         setLoading(false);
       });
   }, [pharmacy, authLoading]);
+
+  // Refresh data when component mounts to ensure latest status
+  useEffect(() => {
+    if (!authLoading && pharmacy && pharmacy._id) {
+      refreshRequestsData();
+    }
+  }, [authLoading, pharmacy]);
 
   const handleViewMedicineList = (request) => {
     console.log('Opening medicine list for request:', request);
     setSelectedRequest(request);
     setShowMedicinePopup(true);
     setIsBillGenerationMode(false); // Ensure it's not in bill generation mode
+    
+    // If request already has a bill generated, load bill details
+    if (request.status === 'accepted' && request.bill) {
+      loadBillDetailsForPopup(request.bill);
+      return;
+    }
+  };
+
+  const loadBillDetailsForPopup = async (billId) => {
+    if (!billId) return;
+    setLoadingBillDetails(true);
+    try {
+      const headers = { 'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}` };
+      let res = await fetch(`http://localhost:5000/api/pharmacy/bills/${billId}`, { headers });
+      if (!res.ok) {
+        // Fallback if different route
+        res = await fetch(`http://localhost:5000/api/bills/${billId}`, { headers });
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setBillDetails(data.bill || data);
+      } else {
+        setBillDetails(null);
+        console.error('Failed to load bill details');
+      }
+    } catch (e) {
+      setBillDetails(null);
+      console.error('Network error while loading bill details');
+    } finally {
+      setLoadingBillDetails(false);
+    }
   };
 
   const closeMedicinePopup = () => {
     setShowMedicinePopup(false);
     setSelectedRequest(null);
     setIsBillGenerationMode(false);
+    setBillDetails(null); // Reset bill details when closing popup
   };
 
   const handleAcceptRequest = () => {
     if (!selectedRequest) return;
+    
+    // Prevent accepting requests that already have bills
+    if (selectedRequest.status === 'accepted' && selectedRequest.bill) {
+      alert('Bill has already been generated for this request.');
+      return;
+    }
     
     // Initialize bill data with medicines from request
     const medicinesWithPrices = selectedRequest.medicines.map(med => ({
@@ -167,6 +258,12 @@ const PharmacyDashboard = () => {
   const handleRejectRequest = async () => {
     if (!selectedRequest) return;
     
+    // Prevent rejecting requests that already have bills
+    if (selectedRequest.status === 'accepted' && selectedRequest.bill) {
+      alert('Cannot reject a request that already has a bill generated.');
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const response = await fetch(`http://localhost:5000/api/pharmacy/reject-request/${selectedRequest._id}`, {
@@ -186,6 +283,10 @@ const PharmacyDashboard = () => {
         ));
         closeMedicinePopup();
         alert('Request rejected successfully');
+        // Add a small delay before refreshing to ensure server has processed the update
+        setTimeout(() => {
+          refreshRequestsData(); // Refresh data to update status
+        }, 1000);
       } else {
         const data = await response.json();
         alert(data.message || 'Failed to reject request');
@@ -266,13 +367,19 @@ const PharmacyDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Bill generated successfully:', data);
+        console.log('Response data structure:', data);
+        console.log('Bill ID from response:', data.bill?._id);
         
         // Update local state
-        setRequests(prev => prev.map(req => 
-          req._id === selectedRequest._id 
-            ? { ...req, status: 'accepted', bill: data.bill._id }
-            : req
-        ));
+        setRequests(prev => {
+          const updated = prev.map(req => 
+            req._id === selectedRequest._id 
+              ? { ...req, status: 'accepted', bill: data.bill?._id }
+              : req
+          );
+          console.log('Updated requests state:', updated);
+          return updated;
+        });
         setShowMedicinePopup(false);
         setSelectedRequest(null);
         setBillData({
@@ -282,6 +389,10 @@ const PharmacyDashboard = () => {
         });
         setIsBillGenerationMode(false);
         alert('Request accepted and bill generated successfully!');
+        // Add a small delay before refreshing to ensure server has processed the update
+        setTimeout(() => {
+          refreshRequestsData(); // Refresh data to update status
+        }, 1000);
       } else {
         const errorData = await response.json();
         console.error('Server error:', errorData);
@@ -465,6 +576,11 @@ const PharmacyDashboard = () => {
                             View Medicine List
                           </button>
                         )}
+                        {req.status === 'accepted' && req.bill && (
+                          <button className="view-medicine-btn" onClick={() => openBillDetails(req.bill)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
+                            View Bill
+                          </button>
+                        )}
                       </div>
                     </div>
                     {/* Right column: Basic request info */}
@@ -474,13 +590,6 @@ const PharmacyDashboard = () => {
                       <div><b>Total Medicines:</b> {req.medicines.length}</div>
                       <div><b>Status:</b> <span style={{ color: getStatusColor(req.status), fontWeight: 'bold' }}>{req.status === 'accepted' ? 'Bill Generated' : req.status}</span></div>
                     </div>
-
-                    {/* Left-bottom View button when bill is generated */}
-                    {req.status === 'accepted' && req.bill && (
-                      <button onClick={() => openBillDetails(req.bill)} style={{ position: 'absolute', left: 16, bottom: 12, background: '#1976d2', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
-                        View
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
@@ -493,7 +602,10 @@ const PharmacyDashboard = () => {
             <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
               <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
                 <div className="medicine-popup-header">
-                  <h3>{isBillGenerationMode ? 'Generate Bill' : 'Medicine List'}</h3>
+                  <h3>
+                    {isBillGenerationMode ? 'Generate Bill' : 
+                     (selectedRequest.status === 'accepted' && selectedRequest.bill ? 'Bill Details' : 'Medicine List')}
+                  </h3>
                   <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
                 </div>
                 
@@ -536,21 +648,76 @@ const PharmacyDashboard = () => {
                         </table>
                       </div>
 
+                      {/* Show bill details if bill exists */}
+                      {selectedRequest.status === 'accepted' && selectedRequest.bill && (
+                        <div className="bill-details-section">
+                          <h4>Bill Summary</h4>
+                          {loadingBillDetails ? (
+                            <div style={{ textAlign: 'center', padding: '20px' }}>
+                              Loading bill details...
+                            </div>
+                          ) : billDetails ? (
+                            <>
+                              <div className="customer-details">
+                                <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
+                                <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
+                                <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
+                              </div>
+                              <div className="medicine-table-container">
+                                <h5>Medicine Prices</h5>
+                                <table className="medicine-popup-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Medicine Name</th>
+                                      <th>Quantity</th>
+                                      <th>Price per Unit</th>
+                                      <th>Total Price</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {(billDetails.medicines || []).map((med, i) => (
+                                      <tr key={i}>
+                                        <td>{med.name}</td>
+                                        <td>{med.quantity}</td>
+                                        <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
+                                        <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </>
+                          ) : (
+                            <div style={{ textAlign: 'center', padding: '20px', color: '#dc3545' }}>
+                              Failed to load bill details
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div className="popup-actions">
-                        <button 
-                          className="action-btn accept-btn" 
-                          onClick={handleAcceptRequest}
-                          disabled={submitting}
-                        >
-                          Accept Request
-                        </button>
-                        <button 
-                          className="action-btn reject-btn" 
-                          onClick={handleRejectRequest}
-                          disabled={submitting}
-                        >
-                          Reject Request
-                        </button>
+                        {selectedRequest.status === 'pending' ? (
+                          <>
+                            <button 
+                              className="action-btn accept-btn" 
+                              onClick={handleAcceptRequest}
+                              disabled={submitting}
+                            >
+                              Accept Request
+                            </button>
+                            <button 
+                              className="action-btn reject-btn" 
+                              onClick={handleRejectRequest}
+                              disabled={submitting}
+                            >
+                              Reject Request
+                            </button>
+                          </>
+                        ) : selectedRequest.status === 'accepted' && selectedRequest.bill ? (
+                          <div style={{ textAlign: 'center', padding: '10px', color: '#28a745', fontWeight: 'bold' }}>
+                            ✓ Bill already generated for this request
+                          </div>
+                        ) : null}
                         <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
                       </div>
                     </div>
