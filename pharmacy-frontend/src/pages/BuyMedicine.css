@@ -22,10 +22,10 @@
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(44, 167, 160, 0.13);
-  padding: 2.5rem 2rem 2rem 2rem;
+  padding: 0rem 2rem 2rem 2rem;
   max-width: 900px;
-  width: 100%;
-  margin: 2rem 1rem 2rem 1rem;
+  width: 96%;
+  margin: 0rem 1rem 2rem 1rem;
   opacity: 0;
   transform: translateY(40px) scale(0.98);
   transition: opacity 0.5s cubic-bezier(.4,1.4,.6,1), transform 0.5s cubic-bezier(.4,1.4,.6,1);
@@ -1549,6 +1549,18 @@ textarea {
   color: #666;
   text-align: center;
   padding: 24px;
+}
+
+.loading-msg {
+  text-align: center;
+  color: #2ca7a0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 2rem;
+  background: #eaf7f6;
+  border-radius: 12px;
+  border: 1px solid #b2f0e6;
+  margin: 2rem 0;
 }
 
 @media (max-width: 900px) {

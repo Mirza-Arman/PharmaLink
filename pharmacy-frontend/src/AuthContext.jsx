@@ -5,14 +5,67 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [customer, setCustomer] = useState(null);
   const [pharmacy, setPharmacy] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Function to validate token and get user data
+  const validateToken = async (token, userType) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/${userType}/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        return userData;
+      } else {
+        // Token is invalid, remove from localStorage
+        localStorage.removeItem(`${userType}_token`);
+        localStorage.removeItem(`${userType}_user`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error validating ${userType} token:`, error);
+      // On network error, remove invalid tokens
+      localStorage.removeItem(`${userType}_token`);
+      localStorage.removeItem(`${userType}_user`);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const customerToken = localStorage.getItem("customer_token");
-    const pharmacyToken = localStorage.getItem("pharmacy_token");
-    const customerUser = localStorage.getItem("customer_user");
-    const pharmacyUser = localStorage.getItem("pharmacy_user");
-    if (customerToken && customerUser) setCustomer(JSON.parse(customerUser));
-    if (pharmacyToken && pharmacyUser) setPharmacy(JSON.parse(pharmacyUser));
+    const initializeAuth = async () => {
+      try {
+        const customerToken = localStorage.getItem("customer_token");
+        const pharmacyToken = localStorage.getItem("pharmacy_token");
+        
+        // Validate tokens and get fresh user data
+        if (customerToken) {
+          const customerData = await validateToken(customerToken, 'customer');
+          if (customerData) {
+            setCustomer(customerData);
+            // Update localStorage with fresh data
+            localStorage.setItem("customer_user", JSON.stringify(customerData));
+          }
+        }
+        
+        if (pharmacyToken) {
+          const pharmacyData = await validateToken(pharmacyToken, 'pharmacy');
+          if (pharmacyData) {
+            setPharmacy(pharmacyData);
+            // Update localStorage with fresh data
+            localStorage.setItem("pharmacy_user", JSON.stringify(pharmacyData));
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const loginCustomer = (user, token) => {
@@ -26,6 +79,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("customer_user", JSON.stringify(user));
     setCustomer(user);
   };
+
   const loginPharmacy = (user, token) => {
     // Clear customer session if exists (mutual exclusion)
     if (customer) {
@@ -37,6 +91,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("pharmacy_user", JSON.stringify(user));
     setPharmacy(user);
   };
+
   const logout = () => {
     localStorage.removeItem("customer_token");
     localStorage.removeItem("customer_user");
@@ -47,7 +102,14 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ customer, pharmacy, loginCustomer, loginPharmacy, logout }}>
+    <AuthContext.Provider value={{ 
+      customer, 
+      pharmacy, 
+      isLoading, 
+      loginCustomer, 
+      loginPharmacy, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

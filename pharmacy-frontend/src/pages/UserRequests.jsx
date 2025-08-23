@@ -4,7 +4,7 @@ import Header from "../component/Header";
 import "./BuyMedicine.css";
 
 const UserRequests = () => {
-  const { customer } = useAuth();
+  const { customer, isLoading: authLoading } = useAuth();
   const [requests, setRequests] = useState([]);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,11 +16,15 @@ const UserRequests = () => {
   const [highlightRight, setHighlightRight] = useState(false);
 
   useEffect(() => {
+    // Wait for auth to initialize before proceeding
+    if (authLoading) return;
+    
     if (!customer || !customer._id) {
       setError("Not logged in as customer.");
       setLoading(false);
       return;
     }
+    
     Promise.all([
       fetch("http://localhost:5000/api/customer/requests", {
         headers: {
@@ -43,7 +47,7 @@ const UserRequests = () => {
       setError("Failed to load data.");
       setLoading(false);
     });
-  }, [customer]);
+  }, [customer, authLoading]);
 
   const getPharmacyResponses = (request) => {
     return bills.filter(bill => {
@@ -115,15 +119,16 @@ const UserRequests = () => {
         {/* Left Column: Requests and Pharmacies */}
         <div style={{ flex: 1.2, minWidth: 380, paddingRight: 10, paddingLeft: 10, maxHeight: '92vh', overflowY: 'auto' }}>
           <h2 className="buy-medicine-title">My Requests</h2>
-          {loading && <div className="loading-msg">Loading your requests...</div>}
-          {error && <div className="error-msg">{error}</div>}
-          {!loading && !error && requests.length === 0 && (
+          {authLoading && <div className="loading-msg">Initializing dashboard...</div>}
+          {!authLoading && loading && <div className="loading-msg">Loading your requests...</div>}
+          {!authLoading && error && <div className="error-msg">{error}</div>}
+          {!authLoading && !loading && !error && requests.length === 0 && (
             <div className="no-requests">
               <p>No requests found.</p>
               <p>Start by ordering medicines from the Buy Medicine page.</p>
             </div>
           )}
-          {!loading && !error && requests.length > 0 && (
+          {!authLoading && !loading && !error && requests.length > 0 && (
             <div className="user-requests-list">
               {requests.map((req, idx) => {
                 const pharmacyResponses = getPharmacyResponses(req);
