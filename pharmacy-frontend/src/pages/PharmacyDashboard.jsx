@@ -10,12 +10,13 @@ const PharmacyDashboard = () => {
   const [error, setError] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showMedicinePopup, setShowMedicinePopup] = useState(false);
-  const [showBillForm, setShowBillForm] = useState(false);
   const [billData, setBillData] = useState({ medicines: [], deliveryCharges: 0, deliveryTime: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showBillDetailsPopup, setShowBillDetailsPopup] = useState(false);
   const [billDetails, setBillDetails] = useState(null);
   const [loadingBillDetails, setLoadingBillDetails] = useState(false);
+  // New state to track if medicine popup is in bill generation mode
+  const [isBillGenerationMode, setIsBillGenerationMode] = useState(false);
   // New: Dashboard stats
   const [dashboardStats, setDashboardStats] = useState({
     totalRequests: 0,
@@ -135,11 +136,13 @@ const PharmacyDashboard = () => {
     console.log('Opening medicine list for request:', request);
     setSelectedRequest(request);
     setShowMedicinePopup(true);
+    setIsBillGenerationMode(false); // Ensure it's not in bill generation mode
   };
 
   const closeMedicinePopup = () => {
     setShowMedicinePopup(false);
     setSelectedRequest(null);
+    setIsBillGenerationMode(false);
   };
 
   const handleAcceptRequest = () => {
@@ -157,8 +160,8 @@ const PharmacyDashboard = () => {
       deliveryTime: ""
     });
     
-    setShowMedicinePopup(false);
-    setShowBillForm(true);
+    // Transform the existing popup to bill generation mode instead of opening a new one
+    setIsBillGenerationMode(true);
   };
 
   const handleRejectRequest = async () => {
@@ -270,13 +273,14 @@ const PharmacyDashboard = () => {
             ? { ...req, status: 'accepted', bill: data.bill._id }
             : req
         ));
-        setShowBillForm(false);
+        setShowMedicinePopup(false);
         setSelectedRequest(null);
         setBillData({
           medicines: [],
           deliveryCharges: 0,
           deliveryTime: ""
         });
+        setIsBillGenerationMode(false);
         alert('Request accepted and bill generated successfully!');
       } else {
         const errorData = await response.json();
@@ -320,16 +324,6 @@ const PharmacyDashboard = () => {
   const closeBillDetails = () => {
     setShowBillDetailsPopup(false);
     setBillDetails(null);
-  };
-
-  const closeBillForm = () => {
-    setShowBillForm(false);
-    setSelectedRequest(null);
-    setBillData({
-      medicines: [],
-      deliveryCharges: 0,
-      deliveryTime: ""
-    });
   };
 
   const getStatusColor = (status) => {
@@ -499,7 +493,7 @@ const PharmacyDashboard = () => {
             <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
               <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
                 <div className="medicine-popup-header">
-                  <h3>Medicine List</h3>
+                  <h3>{isBillGenerationMode ? 'Generate Bill' : 'Medicine List'}</h3>
                   <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
                 </div>
                 
@@ -515,173 +509,161 @@ const PharmacyDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="medicine-list-section">
-                    <h4>Requested Medicines</h4>
-                    <div className="medicine-table-container">
-                      <table className="medicine-popup-table">
-                        <thead>
-                          <tr>
-                            <th>Medicine Name</th>
-                            <th>Type</th>
-                            <th>Strength/Dosage</th>
-                            <th>Quantity</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedRequest.medicines.map((med, i) => (
-                            <tr key={i}>
-                              <td>{med.name}</td>
-                              <td>{med.type || '-'}</td>
-                              <td>{med.strength || '-'}</td>
-                              <td>{med.quantity}</td>
+                  {!isBillGenerationMode ? (
+                    // Medicine List View
+                    <div className="medicine-list-section">
+                      <h4>Requested Medicines</h4>
+                      <div className="medicine-table-container">
+                        <table className="medicine-popup-table">
+                          <thead>
+                            <tr>
+                              <th>Medicine Name</th>
+                              <th>Type</th>
+                              <th>Strength/Dosage</th>
+                              <th>Quantity</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {selectedRequest.medicines.map((med, i) => (
+                              <tr key={i}>
+                                <td>{med.name}</td>
+                                <td>{med.type || '-'}</td>
+                                <td>{med.strength || '-'}</td>
+                                <td>{med.quantity}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="popup-actions">
+                        <button 
+                          className="action-btn accept-btn" 
+                          onClick={handleAcceptRequest}
+                          disabled={submitting}
+                        >
+                          Accept Request
+                        </button>
+                        <button 
+                          className="action-btn reject-btn" 
+                          onClick={handleRejectRequest}
+                          disabled={submitting}
+                        >
+                          Reject Request
+                        </button>
+                        <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="popup-actions">
-                    <button 
-                      className="action-btn accept-btn" 
-                      onClick={handleAcceptRequest}
-                      disabled={submitting}
-                    >
-                      Accept Request
-                    </button>
-                    <button 
-                      className="action-btn reject-btn" 
-                      onClick={handleRejectRequest}
-                      disabled={submitting}
-                    >
-                      Reject Request
-                    </button>
-                    <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Bill Generation Form */}
-          {showBillForm && selectedRequest && (
-            <div className="medicine-popup-overlay" onClick={closeBillForm}>
-              <div className="medicine-popup bill-form-popup" onClick={(e) => e.stopPropagation()}>
-                <div className="medicine-popup-header">
-                  <h3>Generate Bill</h3>
-                  <button className="close-popup-btn" onClick={closeBillForm}>×</button>
-                </div>
-                
-                <div className="medicine-popup-content">
-                  <div className="customer-info-section">
-                    <h4>Customer Information</h4>
-                    <div className="customer-details">
-                      <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
-                      <p><strong>Phone:</strong> {selectedRequest.phone}</p>
-                      <p><strong>Address:</strong> {selectedRequest.address}</p>
-                    </div>
-                  </div>
-
-                  <div className="bill-form-section">
-                    <h4>Medicine Prices</h4>
-                    <div className="medicine-table-container">
-                      <table className="medicine-popup-table">
-                        <thead>
-                          <tr>
-                            <th>Medicine Name</th>
-                            <th>Type</th>
-                            <th>Strength</th>
-                            <th>Quantity</th>
-                            <th>Price per Unit</th>
-                            <th>Total Price</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {billData.medicines.map((med, i) => (
-                            <tr key={i}>
-                              <td>{med.name}</td>
-                              <td>{med.type || '-'}</td>
-                              <td>{med.strength || '-'}</td>
-                              <td>{med.quantity}</td>
-                              <td>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  value={med.pricePerUnit || ''}
-                                  onChange={(e) => handlePriceChange(i, e.target.value)}
-                                  className="price-input"
-                                  placeholder="0.00"
-                                />
-                              </td>
-                              <td>₹{(med.totalPrice || 0).toFixed(2)}</td>
+                  ) : (
+                    // Bill Generation Form
+                    <div className="bill-form-section">
+                      <h4>Medicine Prices</h4>
+                      <div className="medicine-table-container">
+                        <table className="medicine-popup-table">
+                          <thead>
+                            <tr>
+                              <th>Medicine Name</th>
+                              <th>Type</th>
+                              <th>Strength</th>
+                              <th>Quantity</th>
+                              <th>Price per Unit</th>
+                              <th>Total Price</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            {billData.medicines.map((med, i) => (
+                              <tr key={i}>
+                                <td>{med.name}</td>
+                                <td>{med.type || '-'}</td>
+                                <td>{med.strength || '-'}</td>
+                                <td>{med.quantity}</td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={med.pricePerUnit || ''}
+                                    onChange={(e) => handlePriceChange(i, e.target.value)}
+                                    className="price-input"
+                                    placeholder="0.00"
+                                  />
+                                </td>
+                                <td>₹{(med.totalPrice || 0).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                    <div className="delivery-details">
-                      <h4>Delivery Details</h4>
-                      <div className="delivery-inputs">
-                        <div className="input-group">
-                          <label>Delivery Charges (₹):</label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={billData.deliveryCharges || ''}
-                            onChange={(e) => setBillData({
-                              ...billData,
-                              deliveryCharges: parseFloat(e.target.value) || 0
-                            })}
-                            className="delivery-input"
-                            placeholder="0.00"
-                          />
-                        </div>
-                        <div className="input-group">
-                          <label>Delivery Time:</label>
-                          <input
-                            type="text"
-                            value={billData.deliveryTime}
-                            onChange={(e) => setBillData({
-                              ...billData,
-                              deliveryTime: e.target.value
-                            })}
-                            className="delivery-input"
-                            placeholder="e.g., 2-3 hours, Same day"
-                          />
+                      <div className="delivery-details">
+                        <h4>Delivery Details</h4>
+                        <div className="delivery-inputs">
+                          <div className="input-group">
+                            <label>Delivery Charges (₹):</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={billData.deliveryCharges || ''}
+                              onChange={(e) => setBillData({
+                                ...billData,
+                                deliveryCharges: parseFloat(e.target.value) || 0
+                              })}
+                              className="delivery-input"
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Delivery Time:</label>
+                            <input
+                              type="text"
+                              value={billData.deliveryTime}
+                              onChange={(e) => setBillData({
+                                ...billData,
+                                deliveryTime: e.target.value
+                              })}
+                              className="delivery-input"
+                              placeholder="e.g., 2-3 hours, Same day"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="bill-summary">
-                      <h4>Bill Summary</h4>
-                      <div className="summary-row">
-                        <span>Subtotal:</span>
-                        <span>₹{calculateSubtotal().toFixed(2)}</span>
+                      <div className="bill-summary">
+                        <h4>Bill Summary</h4>
+                        <div className="summary-row">
+                          <span>Subtotal:</span>
+                          <span>₹{calculateSubtotal().toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span>Delivery Charges:</span>
+                          <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row total-row">
+                          <span><strong>Total Amount:</strong></span>
+                          <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
+                        </div>
                       </div>
-                      <div className="summary-row">
-                        <span>Delivery Charges:</span>
-                        <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="summary-row total-row">
-                        <span><strong>Total Amount:</strong></span>
-                        <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
-                      </div>
-                    </div>
 
-                    <div className="popup-actions">
-                      <button 
-                        className="action-btn accept-btn" 
-                        onClick={handleSubmitBill}
-                        disabled={submitting}
-                      >
-                        {submitting ? 'Generating Bill...' : 'Generate Bill'}
-                      </button>
-                      <button className="action-btn close-btn" onClick={closeBillForm}>Cancel</button>
+                      <div className="popup-actions">
+                        <button 
+                          className="action-btn accept-btn" 
+                          onClick={handleSubmitBill}
+                          disabled={submitting}
+                        >
+                          {submitting ? 'Generating Bill...' : 'Generate Bill'}
+                        </button>
+                        <button 
+                          className="action-btn reject-btn" 
+                          onClick={() => setIsBillGenerationMode(false)}
+                          disabled={submitting}
+                        >
+                          Back to Medicine List
+                        </button>
+                        <button className="action-btn close-btn" onClick={closeMedicinePopup}>Cancel</button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
