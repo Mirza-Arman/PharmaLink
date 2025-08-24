@@ -1,0 +1,250 @@
+/* Reusable site hero styles */
+.site-hero {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(44,167,160,0.06) 0%, rgba(44,167,160,0.03) 40%, rgba(44,167,160,0) 100%), #ffffff;
+  border: 1px solid #e0f2f1;
+  box-shadow: 0 2px 12px rgba(44, 167, 160, 0.08);
+  border-radius: 16px;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  margin: 0 1rem 1.5rem 1rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Full-bleed look when only background image is used */
+.site-hero.has-bg-no-overlay {
+  margin: 0;              /* remove side gutters */
+  border: none;           /* no border over bg */
+  border-radius: 0;       /* square edges */
+  box-shadow: none;       /* remove shadow rim */
+  background: none;       /* let bg image show fully */
+}
+
+.site-hero.image-left { flex-direction: row; }
+.site-hero.image-right { flex-direction: row-reverse; }
+
+/* Full background layer */
+.site-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.02);
+  filter: saturate(1.02) contrast(1.02);
+}
+
+/* Overlay to ensure text readability */
+.site-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient( to right, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.80) 40%, rgba(255,255,255,0.70) 100% );
+}
+
+.site-hero-illustration {
+  flex: 1 1 58%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  position: relative;
+  z-index: 1;
+}
+
+.site-hero-image {
+  width: min(100%, 720px);
+  max-height: 420px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 28px rgba(44, 167, 160, 0.18));
+  animation: floatY 6s ease-in-out infinite;
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.site-hero-content {
+  flex: 1 1 42%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-right: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* When using background without overlay: make content a fixed 50% and increase contrast */
+.site-hero.has-bg-no-overlay .site-hero-content {
+  flex: 0 1 50%;
+  max-width: 50%;
+  color: #eaf7f6; /* bright but not pure white */
+}
+.site-hero.has-bg-no-overlay .animated-gradient {
+  /* Disable gradient for better legibility on busy backgrounds */
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #eaf7f6;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.50);
+}
+.site-hero.has-bg-no-overlay .site-hero-title {
+  color: #eaf7f6;
+  letter-spacing: 0.2px;
+  font-weight: 800;
+  position: relative;
+}
+.site-hero.has-bg-no-overlay .site-hero-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9be5df, #3bb2a9);
+  box-shadow: 0 2px 10px rgba(59,178,169,0.45);
+}
+.site-hero.has-bg-no-overlay .site-hero-subtitle {
+  color: #d9efee;
+  line-height: 1.55;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1.5px 4px rgba(0,0,0,0.45);
+}
+.site-hero.has-bg-no-overlay .site-hero-bullets li {
+  color: #e3f2f1;
+}
+
+/* Improve secondary button contrast on dark backgrounds */
+.site-hero.has-bg-no-overlay .site-hero-btn.secondary {
+  background: rgba(255,255,255,0.92);
+  color: #0b2a30;
+  border: 1px solid rgba(255,255,255,0.95);
+}
+.site-hero.has-bg-no-overlay .site-hero-btn.secondary:hover {
+  background: #ffffff;
+}
+
+.site-hero-title {
+  font-size: clamp(1.6rem, 2.2vw + 1rem, 2.4rem);
+  line-height: 1.2;
+  color: #23424a;
+  margin: 0;
+}
+
+/* Animated gradient text for title */
+.animated-gradient {
+  background: linear-gradient(90deg, #23424a, #2ca7a0, #3bb2a9, #23424a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 300% 100%;
+  animation: gradientMove 8s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.site-hero-subtitle {
+  font-size: 1.08rem;
+  color: #47646b;
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* Subtle fade-in for subtitle */
+.fade-in { opacity: 0; animation: fadeIn 0.8s ease forwards; }
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* Bulleted list styling */
+.site-hero-bullets {
+  margin: 0.2rem 0 0.6rem 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.4rem 1rem;
+}
+.site-hero-bullets li {
+  position: relative;
+  padding-left: 1.6rem;
+  color: #2b535a;
+  font-size: 0.98rem;
+}
+.site-hero-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #3bb2a9, #2ca7a0);
+  box-shadow: 0 2px 8px rgba(44,167,160,0.35);
+}
+
+.site-hero-ctas {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.site-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.site-hero-btn.primary {
+  background: linear-gradient(135deg, #2ca7a0 0%, #3bb2a9 100%);
+  color: #fff;
+  border: 1px solid #2ca7a0;
+}
+.site-hero-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44, 167, 160, 0.25); }
+
+.site-hero-btn.secondary {
+  background: #f8f9fa;
+  color: #23424a;
+  border: 1px solid #e0f2f1;
+}
+.site-hero-btn.secondary:hover { background: #eaf7f6; }
+
+@media (max-width: 1100px) {
+  .site-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.6rem;
+  }
+  .site-hero-illustration, .site-hero-content {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .site-hero-title { font-size: 1.7rem; }
+  .site-hero-bullets { grid-template-columns: 1fr; }
+  .site-hero.has-bg-no-overlay .site-hero-content {
+    flex-basis: 70%;
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 700px) {
+  .site-hero-image { max-height: 260px; }
+  .site-hero-title { font-size: 1.5rem; }
+  .site-hero-subtitle { font-size: 1rem; }
+  .site-hero.has-bg-no-overlay .site-hero-content {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
