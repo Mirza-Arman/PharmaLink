@@ -28,6 +28,8 @@ const PharmacyDashboard = () => {
   const [pharmacyProfile, setPharmacyProfile] = useState(null);
   // New: Filter state
   const [activeFilter, setActiveFilter] = useState('all');
+  // New: Delete request state
+  const [deletingRequest, setDeletingRequest] = useState(null);
 
   // Function to extract city from address
   const extractCityFromAddress = (address) => {
@@ -230,22 +232,85 @@ const PharmacyDashboard = () => {
       });
 
       if (response.ok) {
-        // Update local state
-        setRequests(prev => prev.map(req => 
-          req._id === selectedRequest._id 
-            ? { ...req, status: 'rejected' }
-            : req
-        ));
+        const data = await response.json();
+        console.log('Reject response:', data);
+        
+        // Remove the request from local state since pharmacy is no longer part of it
+        setRequests(prev => prev.filter(req => req._id !== selectedRequest._id));
+        
         closeMedicinePopup();
-        alert('Request rejected successfully');
+        alert('Request rejected successfully. It has been removed from your dashboard.');
+        
+        // Refresh to update stats
+        await refreshRequests();
       } else {
         const data = await response.json();
         alert(data.message || 'Failed to reject request');
       }
     } catch (err) {
+      console.error('Error rejecting request:', err);
       alert('Error rejecting request');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Handle delete request with confirmation
+  const handleDeleteRequest = async (requestId, requestCustomerName) => {
+    console.log('Delete button clicked for request:', requestId, 'Customer:', requestCustomerName);
+    
+    const confirmed = window.confirm(
+      `Are you sure you want to delete this request from ${requestCustomerName}? This action cannot be undone.`
+    );
+    
+    if (!confirmed) {
+      console.log('Delete cancelled by user');
+      return;
+    }
+
+    console.log('Starting delete request for ID:', requestId);
+    setDeletingRequest(requestId);
+    
+    try {
+      const token = localStorage.getItem('pharmacy_token');
+      console.log('Token exists:', !!token);
+      
+      const response = await fetch(`http://localhost:5000/api/pharmacy/delete-request/${requestId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Delete response status:', response.status);
+      console.log('Delete response ok:', response.ok);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Delete success response:', data);
+        
+        // Remove the request from local state
+        setRequests(prev => {
+          const filtered = prev.filter(req => req._id !== requestId);
+          console.log('Filtered requests count:', filtered.length, 'from', prev.length);
+          return filtered;
+        });
+        
+        alert('Request deleted successfully');
+        // Refresh to update stats
+        await refreshRequests();
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Delete failed with status:', response.status, 'Error:', errorData);
+        alert(errorData.message || `Failed to delete request (Status: ${response.status})`);
+      }
+    } catch (err) {
+      console.error('Network error deleting request:', err);
+      alert('Network error: Please check your connection and try again.');
+    } finally {
+      console.log('Delete operation completed, clearing loading state');
+      setDeletingRequest(null);
     }
   };
 
@@ -565,6 +630,24 @@ const PharmacyDashboard = () => {
                     </div>
 
                     {/* Bottom-left button removed to avoid duplication; use the left-column action only */}
+                    {(() => {
+                      // Only show delete button for rejected or ignored requests
+                      const isRejected = req.status === 'rejected';
+                      const isIgnored = req.status === 'accepted' && req.acceptedBy && req.acceptedBy.toString() !== pharmacy?._id?.toString();
+                      
+                      if (isRejected || isIgnored) {
+                        return (
+                          <button 
+                            className="delete-request-btn"
+                            onClick={() => handleDeleteRequest(req._id, req.customerName || req.customer?.name || "Customer")}
+                            disabled={deletingRequest === req._id}
+                          >
+                            {deletingRequest === req._id ? 'Deleting...' : 'Delete Request'}
+                          </button>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 ))}
               </div>
