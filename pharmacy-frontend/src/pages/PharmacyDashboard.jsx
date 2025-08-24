@@ -37,6 +37,34 @@ const PharmacyDashboard = () => {
     return addressParts[addressParts.length - 1] || address;
   };
 
+  // Helper: find this pharmacy's bill for a request
+  const getMyBill = (req) => {
+    try {
+      return req?.bills?.find(b => b?.pharmacy?._id?.toString() === pharmacy?._id?.toString());
+    } catch {
+      return undefined;
+    }
+  };
+
+  // Helper: compute display status and color for current pharmacy
+  const getDisplayStatus = (req) => {
+    const myBill = getMyBill(req);
+    // Accepted -> order confirmed for me, else offer ignored
+    if (req?.status === 'accepted' && req?.acceptedBy) {
+      const isMine = req.acceptedBy?.toString() === pharmacy?._id?.toString();
+      return {
+        label: isMine ? 'ORDER CONFIRMED' : 'OFFER IGNORED',
+        color: isMine ? '#28a745' : '#dc3545' // green, red
+      };
+    }
+    // Has bill but not accepted yet
+    if (myBill) {
+      return { label: 'BILL GENERATED', color: '#ffc107' }; // yellow
+    }
+    // Default pending
+    return { label: 'PENDING', color: '#007bff' }; // blue
+  };
+
   // Function to fetch pharmacy profile
   const fetchPharmacyProfile = async () => {
     if (!pharmacy || !pharmacy._id) return;
@@ -147,9 +175,6 @@ const PharmacyDashboard = () => {
     return () => clearInterval(interval);
   }, [pharmacy, authLoading]);
 
-  // Remove showBillForm and related logic
-  // Only use showMedicinePopup for the combined popup
-
   // When opening the popup, always initialize billData
   const handleViewMedicineList = (request) => {
     const medicinesWithPrices = request.medicines.map(med => ({
@@ -163,13 +188,10 @@ const PharmacyDashboard = () => {
       deliveryTime: ""
     });
     setSelectedRequest(request);
+    // Open popup in Phase 1 (medicine list view)
+    setShowBillForm(false);
     setShowMedicinePopup(true);
   };
-
-  // Remove handleAcceptRequest and showBillForm logic
-
-  // In the popup JSX, show both the medicine list and the bill form
-  // Remove Accept Request button, only show Generate Bill and Close
 
   const closeMedicinePopup = () => {
     setShowMedicinePopup(false);
@@ -279,12 +301,20 @@ const PharmacyDashboard = () => {
         const data = await response.json();
         console.log('Bill generated successfully:', data);
         
-        // Update local state
-        setRequests(prev => prev.map(req => 
-          req._id === selectedRequest._id 
-            ? { ...req, status: 'accepted', bill: data.bill._id }
-            : req
-        ));
+        // Update local state: append my bill to this request's bills so status reads "Bill Generated"
+        setRequests(prev => prev.map(req => {
+          if (req._id !== selectedRequest._id) return req;
+          const existingBills = Array.isArray(req.bills) ? req.bills : [];
+          const myBillStub = {
+            _id: data?.bill?._id || data?._id,
+            pharmacy: { _id: pharmacy?._id },
+            status: data?.bill?.status || 'accepted',
+            deliveryCharges: data?.bill?.deliveryCharges,
+            deliveryTime: data?.bill?.deliveryTime,
+            totalAmount: data?.bill?.totalAmount
+          };
+          return { ...req, bills: [...existingBills, myBillStub] };
+        }));
         setShowBillForm(false);
         setSelectedRequest(null);
         setBillData({
@@ -481,11 +511,30 @@ const PharmacyDashboard = () => {
                       <div><b>Address:</b> {req.address}</div>
                       <div><b>Phone:</b> {req.phone}</div>
                       <div style={{ marginTop: '10px' }}>
-                        {req.status === 'pending' && (
-                          <button className="view-medicine-btn" onClick={() => handleViewMedicineList(req)} style={{ background: '#2ca7a0', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
-                            View Medicine List
-                          </button>
-                        )}
+                        {(() => {
+                          const myBill = getMyBill(req);
+                          const isConfirmed = req?.status === 'accepted' && req?.acceptedBy?.toString() === pharmacy?._id?.toString();
+                          // If my bill exists (pending) or order confirmed for me => show View Bill
+                          if ((req.status === 'pending' && myBill) || isConfirmed) {
+                            const billId = myBill?._id || req?.bill; // fallback if present
+                            if (!billId) return null;
+                            return (
+                              <button className="view-medicine-btn" onClick={() => openBillDetails(billId)} style={{ background: '#2ca7a0', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
+                                View Bill
+                              </button>
+                            );
+                          }
+                          // If pending and no bill yet => allow View Medicine List (phase 1 with Accept)
+                          if (req.status === 'pending' && !myBill) {
+                            return (
+                              <button className="view-medicine-btn" onClick={() => handleViewMedicineList(req)} style={{ background: '#2ca7a0', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
+                                View Medicine List
+                              </button>
+                            );
+                          }
+                          // If accepted for another pharmacy (offer ignored) or rejected => no action
+                          return null;
+                        })()}
                       </div>
                     </div>
                     {/* Right column: Basic request info */}
@@ -493,138 +542,194 @@ const PharmacyDashboard = () => {
                       <div><b>Request ID:</b> {req._id}</div>
                       <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
                       <div><b>Total Medicines:</b> {req.medicines.length}</div>
-                      <div><b>Status:</b> <span style={{ color: getStatusColor(req.status), fontWeight: 'bold' }}>{req.status === 'accepted' ? 'Bill Generated' : req.status}</span></div>
+                      {(() => { const s = getDisplayStatus(req); return (
+                        <div><b>Status:</b> <span style={{ color: s.color, fontWeight: 'bold' }}>{s.label}</span></div>
+                      ); })()}
                     </div>
 
-                    {/* Left-bottom View button when bill is generated */}
-                    {req.status === 'accepted' && req.bill && (
-                      <button onClick={() => openBillDetails(req.bill)} style={{ position: 'absolute', left: 16, bottom: 12, background: '#1976d2', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
-                        View
-                      </button>
-                    )}
+                    {/* Bottom-left button removed to avoid duplication; use the left-column action only */}
                   </div>
                 ))}
               </div>
             )}
           </div>
           {/* Popups remain unchanged */}
-          {/* Medicine List Popup */}
+          {/* Medicine List / Generate Bill Popup */}
           {console.log('Popup state:', { showMedicinePopup, selectedRequest })}
           {showMedicinePopup && selectedRequest && (
             <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
               <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
                 <div className="medicine-popup-header">
-                  <h3>Generate Bill</h3>
+                  <h3>{showBillForm ? 'Generate Bill' : 'Medicine List'}</h3>
                   <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
                 </div>
                 <div className="medicine-popup-content">
-                  <div className="customer-info-section">
-                    <h4>Customer Information</h4>
-                    <div className="customer-details">
-                      <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
-                      <p><strong>Phone:</strong> {selectedRequest.phone}</p>
-                      <p><strong>City:</strong> {selectedRequest.city}</p>
-                      <p><strong>Address:</strong> {selectedRequest.address}</p>
-                      <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div className="medicine-list-section">
-                    <h4>Requested Medicines</h4>
-                    <div className="medicine-table-container">
-                      <table className="medicine-popup-table">
-                        <thead>
-                          <tr>
-                            <th>Medicine Name</th>
-                            <th>Type</th>
-                            <th>Strength/Dosage</th>
-                            <th>Quantity</th>
-                            <th>Price per Unit</th>
-                            <th>Total Price</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {billData.medicines.map((med, i) => (
-                            <tr key={i}>
-                              <td>{med.name}</td>
-                              <td>{med.type || '-'}</td>
-                              <td>{med.strength || '-'}</td>
-                              <td>{med.quantity}</td>
-                              <td>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  value={med.pricePerUnit || ''}
-                                  onChange={(e) => handlePriceChange(i, e.target.value)}
-                                  className="price-input"
-                                  placeholder="0.00"
-                                />
-                              </td>
-                              <td>₹{(med.totalPrice || 0).toFixed(2)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div className="delivery-details">
-                    <h4>Delivery Details</h4>
-                    <div className="delivery-inputs">
-                      <div className="input-group">
-                        <label>Delivery Charges (₹):</label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={billData.deliveryCharges || ''}
-                          onChange={(e) => setBillData({
-                            ...billData,
-                            deliveryCharges: parseFloat(e.target.value) || 0
-                          })}
-                          className="delivery-input"
-                          placeholder="0.00"
-                        />
+                  {!showBillForm ? (
+                    <>
+                      <div className="customer-info-section">
+                        <h4>Customer Information</h4>
+                        <div className="customer-details">
+                          <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
+                          <p><strong>Phone:</strong> {selectedRequest.phone}</p>
+                          <p><strong>City:</strong> {selectedRequest.city}</p>
+                          <p><strong>Address:</strong> {selectedRequest.address}</p>
+                          <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                        </div>
                       </div>
-                      <div className="input-group">
-                        <label>Delivery Time:</label>
-                        <input
-                          type="text"
-                          value={billData.deliveryTime}
-                          onChange={(e) => setBillData({
-                            ...billData,
-                            deliveryTime: e.target.value
-                          })}
-                          className="delivery-input"
-                          placeholder="e.g., 2-3 hours, Same day"
-                        />
+                      <div className="medicine-list-section">
+                        <h4>Requested Medicines</h4>
+                        <div className="medicine-table-container">
+                          <table className="medicine-popup-table">
+                            <thead>
+                              <tr>
+                                <th>Medicine Name</th>
+                                <th>Type</th>
+                                <th>Strength/Dosage</th>
+                                <th>Quantity</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {billData.medicines.map((med, i) => (
+                                <tr key={i}>
+                                  <td>{med.name}</td>
+                                  <td>{med.type || '-'}</td>
+                                  <td>{med.strength || '-'}</td>
+                                  <td>{med.quantity}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="bill-summary">
-                    <h4>Bill Summary</h4>
-                    <div className="summary-row">
-                      <span>Subtotal:</span>
-                      <span>₹{calculateSubtotal().toFixed(2)}</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Delivery Charges:</span>
-                      <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
-                    </div>
-                    <div className="summary-row total-row">
-                      <span><strong>Total Amount:</strong></span>
-                      <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
-                    </div>
-                  </div>
-                  <div className="popup-actions">
-                    <button 
-                      className="action-btn accept-btn" 
-                      onClick={handleSubmitBill}
-                      disabled={submitting}
-                    >
-                      {submitting ? 'Generating Bill...' : 'Generate Bill'}
-                    </button>
-                    <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
-                  </div>
+                      <div className="popup-actions">
+                        <button 
+                          className="action-btn accept-btn"
+                          onClick={() => setShowBillForm(true)}
+                        >
+                          Accept Request
+                        </button>
+                        <button 
+                          className="action-btn reject-btn"
+                          onClick={handleRejectRequest}
+                          disabled={submitting}
+                        >
+                          {submitting ? 'Rejecting...' : 'Reject Request'}
+                        </button>
+                        <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="customer-info-section">
+                        <h4>Customer Information</h4>
+                        <div className="customer-details">
+                          <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
+                          <p><strong>Phone:</strong> {selectedRequest.phone}</p>
+                          <p><strong>City:</strong> {selectedRequest.city}</p>
+                          <p><strong>Address:</strong> {selectedRequest.address}</p>
+                          <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="medicine-list-section">
+                        <h4>Requested Medicines</h4>
+                        <div className="medicine-table-container">
+                          <table className="medicine-popup-table">
+                            <thead>
+                              <tr>
+                                <th>Medicine Name</th>
+                                <th>Type</th>
+                                <th>Strength/Dosage</th>
+                                <th>Quantity</th>
+                                <th>Price per Unit</th>
+                                <th>Total Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {billData.medicines.map((med, i) => (
+                                <tr key={i}>
+                                  <td>{med.name}</td>
+                                  <td>{med.type || '-'}</td>
+                                  <td>{med.strength || '-'}</td>
+                                  <td>{med.quantity}</td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={med.pricePerUnit || ''}
+                                      onChange={(e) => handlePriceChange(i, e.target.value)}
+                                      className="price-input"
+                                      placeholder="0.00"
+                                    />
+                                  </td>
+                                  <td>₹{(med.totalPrice || 0).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div className="delivery-details">
+                        <h4>Delivery Details</h4>
+                        <div className="delivery-inputs">
+                          <div className="input-group">
+                            <label>Delivery Charges (₹):</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={billData.deliveryCharges || ''}
+                              onChange={(e) => setBillData({
+                                ...billData,
+                                deliveryCharges: parseFloat(e.target.value) || 0
+                              })}
+                              className="delivery-input"
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Delivery Time:</label>
+                            <input
+                              type="text"
+                              value={billData.deliveryTime}
+                              onChange={(e) => setBillData({
+                                ...billData,
+                                deliveryTime: e.target.value
+                              })}
+                              className="delivery-input"
+                              placeholder="e.g., 2-3 hours, Same day"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bill-summary">
+                        <h4>Bill Summary</h4>
+                        <div className="summary-row">
+                          <span>Subtotal:</span>
+                          <span>₹{calculateSubtotal().toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span>Delivery Charges:</span>
+                          <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row total-row">
+                          <span><strong>Total Amount:</strong></span>
+                          <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
+                        </div>
+                      </div>
+                      <div className="popup-actions">
+                        <button 
+                          className="action-btn accept-btn" 
+                          onClick={handleSubmitBill}
+                          disabled={submitting}
+                        >
+                          {submitting ? 'Generating Bill...' : 'Generate Bill'}
+                        </button>
+                        <button className="action-btn close-btn" onClick={() => setShowBillForm(false)}>Back</button>
+                        <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -643,12 +748,12 @@ const PharmacyDashboard = () => {
                   {!loadingBillDetails && billDetails && (
                     <>
                       <div className="customer-info-section">
-                        <h4>Summary</h4>
+                        <h4>Customer Information</h4>
                         <div className="customer-details">
-                          <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
-                          <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
-                          <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
-                          <p><strong>Status:</strong> {billDetails.status === 'accepted' ? 'Bill Generated' : (billDetails.status || '-')}</p>
+                          <p><strong>Name:</strong> {billDetails?.customer?.name || billDetails?.request?.customerName || 'N/A'}</p>
+                          <p><strong>Phone:</strong> {billDetails?.customer?.phone || billDetails?.request?.phone || '-'}</p>
+                          <p><strong>City:</strong> {billDetails?.request?.city || '-'}</p>
+                          <p><strong>Address:</strong> {billDetails?.request?.address || '-'}</p>
                         </div>
                       </div>
                       <div className="medicine-list-section">
@@ -679,6 +784,32 @@ const PharmacyDashboard = () => {
                             </tbody>
                           </table>
                         </div>
+                      </div>
+                      <div className="bill-summary" style={{ marginTop: '12px' }}>
+                        <h4 style={{ marginBottom: 8 }}>Bill Summary</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px', alignItems: 'center' }}>
+                          <div className="summary-row" style={{ display: 'contents' }}>
+                            <span>Delivery Time:</span>
+                            <span style={{ textAlign: 'right' }}>{billDetails.deliveryTime || '-'}</span>
+                          </div>
+                          <div className="summary-row" style={{ display: 'contents' }}>
+                            <span>Delivery Charges:</span>
+                            <span style={{ textAlign: 'right' }}>₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</span>
+                          </div>
+                          <div className="summary-row" style={{ display: 'contents' }}>
+                            <span>Status:</span>
+                            {(() => { const s = getDisplayStatus(billDetails?.request || selectedRequest || {}); return (
+                              <span style={{ textAlign: 'right', color: s.color, fontWeight: 600 }}>{s.label}</span>
+                            ); })()}
+                          </div>
+                          <div className="summary-row total-row" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', paddingTop: 4, borderTop: '1px solid #eee', marginTop: 4 }}>
+                            <span><strong>Total Amount:</strong></span>
+                            <span><strong>₹{Number(billDetails.totalAmount || 0).toFixed(2)}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                        <button onClick={closeBillDetails} style={{ background: '#2ca7a0', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Close</button>
                       </div>
                     </>
                   )}
