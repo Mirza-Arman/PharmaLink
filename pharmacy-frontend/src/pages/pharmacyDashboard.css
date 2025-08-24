@@ -337,6 +337,29 @@
   margin: 2rem 0;
 }
 
+/* View Bill Button */
+.view-bill-btn {
+  position: absolute;
+  left: 16px;
+  bottom: 12px;
+  background: #2ca7a0;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(44, 167, 160, 0.2);
+  transition: all 0.18s ease-out;
+}
+
+.view-bill-btn:hover {
+  background: #3bb2a9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(44, 167, 160, 0.3);
+}
+
 /* Responsive Filter Design */
 @media (max-width: 1200px) {
   .filter-buttons {

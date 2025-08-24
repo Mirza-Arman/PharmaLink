@@ -33,16 +33,18 @@ router.put('/profile', auth('pharmacy'), async (req, res) => {
 
 router.get('/pharmacies', getPharmacies);
 
-// Get all buyer requests
-router.get('/requests', async (req, res) => {
+// Get all buyer requests for the logged-in pharmacy
+router.get('/requests', auth('pharmacy'), async (req, res) => {
   try {
-    const requests = await Request.find()
-      .populate('customer', 'email');
+    // Only get requests that are sent to this pharmacy
+    const requests = await Request.find({
+      selectedPharmacies: req.user.id.toString()
+    }).populate('customer', 'email');
     
     // For each request, also fetch bills to show pharmacy-specific status
     const requestsWithBills = await Promise.all(requests.map(async (request) => {
       const bills = await Bill.find({ request: request._id })
-        .populate('pharmacy', 'pharmacyName');
+        .populate('pharmacy', 'pharmacyName _id');
       
       return {
         ...request.toObject(),
@@ -161,10 +163,23 @@ router.post('/accept-request/:requestId', auth('pharmacy'), async (req, res) => 
     // Don't update request status - keep it pending so other pharmacies can also generate bills
     // The request status will only change when customer accepts a specific bill
 
+    // Fetch the updated request with bills populated to return to frontend
+    const updatedRequest = await Request.findById(requestId)
+      .populate('customer', 'email');
+    
+    // Get all bills for this request to include in response
+    const allBills = await Bill.find({ request: requestId })
+      .populate('pharmacy', 'pharmacyName _id');
+    
+    const requestWithBills = {
+      ...updatedRequest.toObject(),
+      bills: allBills
+    };
+
     res.status(201).json({ 
       message: 'Bill generated successfully', 
       bill,
-      request 
+      request: requestWithBills
     });
   } catch (err) {
     console.error('Error generating bill:', err);
