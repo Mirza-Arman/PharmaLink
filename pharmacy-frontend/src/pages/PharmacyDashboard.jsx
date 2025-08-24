@@ -37,6 +37,23 @@ const PharmacyDashboard = () => {
     return addressParts[addressParts.length - 1] || address;
   };
 
+  // Helper: format date-time in AM/PM with readable date
+  const formatDateTime = (value) => {
+    if (!value) return '-';
+    try {
+      return new Date(value).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return '-';
+    }
+  };
+
   // Helper: find this pharmacy's bill for a request
   const getMyBill = (req) => {
     try {
@@ -105,8 +122,7 @@ const PharmacyDashboard = () => {
 
   // Function to filter requests based on active filter
   const getFilteredRequests = () => {
-    if (activeFilter === 'all') return requests;
-    return requests.filter(req => {
+    const base = activeFilter === 'all' ? requests : requests.filter(req => {
       switch (activeFilter) {
         case 'pending':
           return req.status === 'pending' && (!req.bills || !req.bills.some(bill => bill.pharmacy._id.toString() === pharmacy._id.toString()));
@@ -120,6 +136,8 @@ const PharmacyDashboard = () => {
           return true;
       }
     });
+    // Sort by latest createdAt first
+    return [...base].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   };
 
   // Function to refresh requests and update stats
@@ -152,7 +170,7 @@ const PharmacyDashboard = () => {
       setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });
       setLoading(false);
     } catch (error) {
-      setError("Failed to load requests.");
+      console.error('Failed to load requests:', error);
       setLoading(false);
     }
   };
@@ -539,8 +557,7 @@ const PharmacyDashboard = () => {
                     </div>
                     {/* Right column: Basic request info */}
                     <div style={{ flex: 2 }}>
-                      <div><b>Request ID:</b> {req._id}</div>
-                      <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
+                      <div><b>Request Time:</b> {formatDateTime(req.createdAt)}</div>
                       <div><b>Total Medicines:</b> {req.medicines.length}</div>
                       {(() => { const s = getDisplayStatus(req); return (
                         <div><b>Status:</b> <span style={{ color: s.color, fontWeight: 'bold' }}>{s.label}</span></div>
@@ -573,7 +590,7 @@ const PharmacyDashboard = () => {
                           <p><strong>Phone:</strong> {selectedRequest.phone}</p>
                           <p><strong>City:</strong> {selectedRequest.city}</p>
                           <p><strong>Address:</strong> {selectedRequest.address}</p>
-                          <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                          <p><strong>Request Date & Time:</strong> {formatDateTime(selectedRequest.createdAt)}</p>
                         </div>
                       </div>
                       <div className="medicine-list-section">
@@ -754,6 +771,7 @@ const PharmacyDashboard = () => {
                           <p><strong>Phone:</strong> {billDetails?.customer?.phone || billDetails?.request?.phone || '-'}</p>
                           <p><strong>City:</strong> {billDetails?.request?.city || '-'}</p>
                           <p><strong>Address:</strong> {billDetails?.request?.address || '-'}</p>
+                          <p><strong>Request Date & Time:</strong> {formatDateTime(billDetails?.request?.createdAt)}</p>
                         </div>
                       </div>
                       <div className="medicine-list-section">
@@ -787,26 +805,37 @@ const PharmacyDashboard = () => {
                       </div>
                       <div className="bill-summary" style={{ marginTop: '12px' }}>
                         <h4 style={{ marginBottom: 8 }}>Bill Summary</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px', alignItems: 'center' }}>
-                          <div className="summary-row" style={{ display: 'contents' }}>
-                            <span>Delivery Time:</span>
-                            <span style={{ textAlign: 'right' }}>{billDetails.deliveryTime || '-'}</span>
-                          </div>
-                          <div className="summary-row" style={{ display: 'contents' }}>
-                            <span>Delivery Charges:</span>
-                            <span style={{ textAlign: 'right' }}>₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</span>
-                          </div>
-                          <div className="summary-row" style={{ display: 'contents' }}>
-                            <span>Status:</span>
-                            {(() => { const s = getDisplayStatus(billDetails?.request || selectedRequest || {}); return (
-                              <span style={{ textAlign: 'right', color: s.color, fontWeight: 600 }}>{s.label}</span>
-                            ); })()}
-                          </div>
-                          <div className="summary-row total-row" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', paddingTop: 4, borderTop: '1px solid #eee', marginTop: 4 }}>
-                            <span><strong>Total Amount:</strong></span>
-                            <span><strong>₹{Number(billDetails.totalAmount || 0).toFixed(2)}</strong></span>
-                          </div>
-                        </div>
+                        {(() => {
+                          const subtotal = (billDetails.medicines || []).reduce((sum, m) => sum + Number(m.totalPrice || 0), 0);
+                          const statusInfo = getDisplayStatus(billDetails?.request || selectedRequest || {});
+                          return (
+                            <div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                  <div style={{ color: '#555' }}>Delivery Time</div>
+                                  <div style={{ fontWeight: 600, textAlign: 'right' }}>{billDetails.deliveryTime || '-'}</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                  <div style={{ color: '#555' }}>Medicine Amount</div>
+                                  <div style={{ textAlign: 'right', fontWeight: 600 }}>₹{subtotal.toFixed(2)}</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                  <div style={{ color: '#555' }}>Request Status</div>
+                                  <div style={{ fontWeight: 700, color: statusInfo.color, textAlign: 'right' }}>{statusInfo.label}</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                  <div style={{ color: '#555' }}>Delivery Charges</div>
+                                  <div style={{ textAlign: 'right', fontWeight: 600 }}>₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</div>
+                                </div>
+                              </div>
+                              <div style={{ height: 1, background: '#eee', margin: '10px 0' }} />
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <div><strong>Grand Total</strong></div>
+                                <div><strong>₹{Number(billDetails.totalAmount || subtotal + Number(billDetails.deliveryCharges || 0)).toFixed(2)}</strong></div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
                         <button onClick={closeBillDetails} style={{ background: '#2ca7a0', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Close</button>
