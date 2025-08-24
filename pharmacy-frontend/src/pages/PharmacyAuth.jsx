@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./PharmacyAuth.css";
@@ -13,7 +12,6 @@ const PharmacyAuth = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
     pharmacyName: "",
@@ -110,35 +108,19 @@ const PharmacyAuth = () => {
                   />
                 </div>
                 <div className="form-section">
-                  <label className="form-label" htmlFor="phone">Phone Number</label>
+                  <label className="form-label" htmlFor="password">Password</label>
                   <input
-                    id="phone"
-                    name="phone"
+                    id="password"
+                    name="password"
                     className="form-input"
-                    type="tel"
-                    placeholder="03XXXXXXXXX"
-                    value={form.phone}
+                    type="password"
+                    placeholder="Password"
+                    value={form.password}
                     onChange={handleChange}
-                    pattern="03[0-9]{9}"
                     required
                   />
                 </div>
               </>
-            )}
-            {!isSignup && (
-              <div className="form-section">
-                <label className="form-label" htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  className="form-input"
-                  type="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
             )}
             {isSignup && (
               <div className="form-grid two-col">
@@ -152,20 +134,6 @@ const PharmacyAuth = () => {
                     placeholder="Email"
                     value={form.email}
                     onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-section">
-                  <label className="form-label" htmlFor="phone">Phone Number</label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    className="form-input"
-                    type="tel"
-                    placeholder="03XXXXXXXXX"
-                    value={form.phone}
-                    onChange={handleChange}
-                    pattern="03[0-9]{9}"
                     required
                   />
                 </div>

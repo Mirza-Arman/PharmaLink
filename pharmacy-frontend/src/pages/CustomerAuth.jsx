@@ -4,8 +4,6 @@ import { useAuth } from "../AuthContext";
 import Header from "../component/Header";
 import "./CustomerAuth.css";
 
-
-
 const Footer = () => (
   <footer className="footer">
     <div className="footer-left">
@@ -26,7 +24,7 @@ const API_URL = "http://localhost:5000/api/customer";
 
 const CustomerAuth = () => {
   const [isSignup, setIsSignup] = useState(false);
-  const [form, setForm] = useState({ email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,20 +107,6 @@ const CustomerAuth = () => {
                 placeholder="Email"
                 value={form.email}
                 onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-section">
-              <label className="form-label" htmlFor="phone">Phone Number</label>
-              <input
-                id="phone"
-                name="phone"
-                className="form-input"
-                type="tel"
-                placeholder="03XXXXXXXXX"
-                value={form.phone}
-                onChange={handleChange}
-                pattern="03[0-9]{9}"
                 required
               />
             </div>
