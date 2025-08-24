@@ -81,6 +81,32 @@ const About = () => (
         ))}
       </div>
     </section>
+
+    {/* Why Choose Us Section */}
+    <section className="about-why-choose-section">
+      <div className="about-why-choose-content">
+        <div className="about-why-choose-text">
+          <h2 className="fade-left">Why Choose Us?</h2>
+          <div className="why-choose-list">
+            {whyChooseUs.map((reason, i) => (
+              <div key={i} className="why-choose-item">
+                <div className="why-choose-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 13l4 4L19 7" stroke="#2ca7a0" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <p>{reason}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="about-why-choose-image">
+          <img src="https://plus.unsplash.com/premium_photo-1681995737073-e3bed840a219?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzd8fHBoYXJtYWN5JTIwcGljdHVyZXMlMjBmb3IlMjBhYm91dCUyMCUyMHVzJTIwcGFnZXxlbnwwfHwwfHx8MA%3D%3D" alt="Why Choose Us" />
+        </div>
+      </div>
+    </section>
+
+    
   </div>
 );
 
