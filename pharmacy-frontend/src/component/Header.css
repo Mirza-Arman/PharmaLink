@@ -16,9 +16,27 @@
 }
 
 .logo-area {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   font-size: 1.7rem;
   font-weight: bold;
   letter-spacing: 1px;
+}
+
+.header-logo {
+  height: 50px;
+  width: 200px;
+  filter: brightness(0) invert(1);
+  transition: transform 0.2s ease;
+}
+
+.header-logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-text {
+  color: #fff;
 }
 
 .nav-center {
@@ -276,6 +294,18 @@
 @media (max-width: 768px) {
   .header {
     padding: 1rem 1.5rem;
+  }
+  
+  .logo-area {
+    gap: 0.5rem;
+  }
+  
+  .header-logo {
+    height: 48px;
+  }
+  
+  .logo-text {
+    font-size: 1.4rem;
   }
   
   .nav-center {

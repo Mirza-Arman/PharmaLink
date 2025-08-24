@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { getGravatarUrl } from "../utils/gravatar";
+import logo from "/pharmacy-logo.png";
 import "./Header.css";
 
 const Header = () => {
@@ -27,7 +28,9 @@ const Header = () => {
 
   return (
     <header className="header">
-      <div className="logo-area">PharmacyConnect</div>
+      <div className="logo-area">
+        <img src={logo} alt="PharmacyConnect" className="header-logo" />
+      </div>
       <nav className="nav-center">
         <Link to="/">Home</Link>
         <a href="#faq">FAQs</a>

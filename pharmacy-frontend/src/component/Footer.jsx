@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/pharmacy-logo.png";
+import logo from "/pharmacy-logo.png";
 import "./Footer.css";
 
 const Footer = () => {
@@ -10,7 +10,6 @@ const Footer = () => {
         <div className="footer-col footer-left">
           <div className="brand">
             <img src={logo} alt="PharmacyConnect" className="brand-logo" />
-            <span className="brand-name">PharmacyConnect</span>
           </div>
           <p className="brand-desc">
             Your trusted bridge between customers and local pharmacies. Compare prices,

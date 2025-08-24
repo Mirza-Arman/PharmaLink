@@ -13,7 +13,7 @@
   margin: 0 1rem 1.5rem 1rem;
   position: relative;
   overflow: hidden;
-  min-height: 100vh;
+  height: 90vh;
 }
 
 /* Full-bleed look when only background image is used */
