@@ -29,6 +29,9 @@ const PharmacyDashboard = () => {
   const [pharmacyProfile, setPharmacyProfile] = useState(null);
   // New: Filter state
   const [activeFilter, setActiveFilter] = useState('all');
+  // New: Success message state
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // Function to extract city from address
   const extractCityFromAddress = (address) => {
@@ -36,6 +39,16 @@ const PharmacyDashboard = () => {
     // Simple city extraction - you can enhance this logic
     const addressParts = address.split(',').map(part => part.trim());
     return addressParts[addressParts.length - 1] || address;
+  };
+
+  // Function to show success message
+  const displaySuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+      setSuccessMessage('');
+    }, 3000);
   };
 
   // Function to fetch pharmacy profile
@@ -86,9 +99,13 @@ const PharmacyDashboard = () => {
           if (req.status === 'rejected') ignored++;
         });
         setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });
+      } else {
+        console.error('Failed to refresh requests data:', response.status);
+        // Don't clear existing data on error, just log it
       }
     } catch (err) {
       console.error('Failed to refresh requests data:', err);
+      // Don't clear existing data on error, just log it
     }
   };
 
@@ -168,6 +185,7 @@ const PharmacyDashboard = () => {
       setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });
     } catch (error) {
       console.error('Error refreshing requests:', error);
+      // Don't clear existing data on error, just log it
     }
   };
 
@@ -184,17 +202,6 @@ const PharmacyDashboard = () => {
     // Fetch pharmacy profile
     fetchPharmacyProfile();
     
-    fetch("http://localhost:5000/api/pharmacy/requests", {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`
-      }
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
     fetch("http://localhost:5000/api/pharmacy/requests", {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`
@@ -245,6 +252,27 @@ const PharmacyDashboard = () => {
     
     return () => clearInterval(interval);
   }, [pharmacy, authLoading]);
+
+  // Preserve pharmacy state during operations
+  useEffect(() => {
+    if (pharmacy && !localStorage.getItem('pharmacy_token')) {
+      // If pharmacy exists but token is missing, try to restore from localStorage
+      const storedPharmacy = localStorage.getItem('pharmacy_data');
+      if (storedPharmacy) {
+        try {
+          const parsedPharmacy = JSON.parse(storedPharmacy);
+          // Don't update state here, just ensure token exists
+          if (!localStorage.getItem('pharmacy_token')) {
+            console.warn('Pharmacy token missing, but pharmacy data exists');
+          }
+        } catch (e) {
+          console.error('Failed to parse stored pharmacy data:', e);
+        }
+      }
+    }
+  }, [pharmacy]);
+
+  // Remove the problematic authentication check useEffect
 
   const handleViewMedicineList = (request) => {
     console.log('Opening medicine list for request:', request);
@@ -408,12 +436,9 @@ const PharmacyDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Bill generated successfully:', data);
-        console.log('Response data:', data);
-        console.log('Current requests state:', requests);
         
-        // Update local state with the bills array to properly reflect bill generation status
+        // First, update the local state immediately to reflect the change
         setRequests(prev => {
-          console.log('Updating requests state. Previous state:', prev);
           const updated = prev.map(req => 
             req._id === selectedRequest._id 
               ? { 
@@ -423,10 +448,20 @@ const PharmacyDashboard = () => {
                 }
               : req
           );
-          console.log('Updated requests state:', updated);
           return updated;
         });
-        setShowBillForm(false);
+
+        // Update dashboard stats immediately
+        setDashboardStats(prev => ({
+          ...prev,
+          billsGenerated: prev.billsGenerated + 1
+        }));
+
+        // Show success message
+        displaySuccessMessage('Bill generated successfully! Waiting for customer to accept.');
+        
+        // Clean up popup state but keep dashboard visible
+        setShowMedicinePopup(false);
         setSelectedRequest(null);
         setBillData({
           medicines: [],
@@ -434,13 +469,17 @@ const PharmacyDashboard = () => {
           deliveryTime: ""
         });
         setIsBillGenerationMode(false);
-        alert('Request accepted and bill generated successfully!');
-        // Add a small delay before refreshing to ensure server has processed the update
+        
+        // Ensure pharmacy state is preserved
+        if (pharmacy) {
+          localStorage.setItem('pharmacy_data', JSON.stringify(pharmacy));
+        }
+        
+        // Refresh data in the background without affecting UI
         setTimeout(() => {
-          refreshRequestsData(); // Refresh data to update status
-        }, 1000);
-        alert('Bill generated successfully! Waiting for customer to accept.');
-        refreshRequests(); // Refresh requests and update stats after successful bill generation
+          refreshRequestsData();
+          refreshRequests();
+        }, 500);
       } else {
         const errorData = await response.json();
         console.error('Server error:', errorData);
@@ -539,305 +578,303 @@ const PharmacyDashboard = () => {
   return (
     <div className="pharmacy-dashboard-bg">
       <Header />
-      <div className="pharmacy-dashboard-container">
-        {/* Left Sidebar */}
-        <aside className="pharmacy-dashboard-sidebar">
-          <div className="pharmacy-profile-card">
-            <div className="pharmacy-avatar-area">
-              <div className="pharmacy-avatar-circle">
-                {(pharmacyProfile?.pharmacyName || pharmacy?.pharmacyName || "P").charAt(0).toUpperCase()}
-              </div>
-            </div>
-            <div className="pharmacy-profile-info">
-              <h3 className="pharmacy-name">{pharmacyProfile?.pharmacyName || pharmacy?.pharmacyName || "Pharmacy"}</h3>
-              <div className="pharmacy-meta"><span>Address:</span> {pharmacyProfile?.address || pharmacy?.address || "-"}</div>
-              <div className="pharmacy-meta"><span>Phone:</span> {pharmacyProfile?.phone || pharmacy?.phone || "-"}</div>
-              <div className="pharmacy-meta"><span>City:</span> {extractCityFromAddress(pharmacyProfile?.address || pharmacy?.address)}</div>
-              <div className="pharmacy-meta"><span>Email:</span> {pharmacyProfile?.email || pharmacy?.email || "-"}</div>
-              <div className="pharmacy-meta"><span>Licence:</span> {pharmacyProfile?.licence || pharmacy?.licence || "-"}</div>
-            </div>
-          </div>
-          <div className="pharmacy-dashboard-stats">
-            <h4>Dashboard Overview</h4>
-            <div className="dashboard-stats-list">
-              <div className="dashboard-stat-item total-requests">
-                <span className="stat-label">Total Requests</span>
-                <span className="stat-value">{dashboardStats.totalRequests}</span>
-              </div>
-              <div className="dashboard-stat-item bills-generated">
-                <span className="stat-label">Bills Generated</span>
-                <span className="stat-value">{dashboardStats.billsGenerated}</span>
-              </div>
-              <div className="dashboard-stat-item confirmed">
-                <span className="stat-label">Offers Accepted</span>
-                <span className="stat-value">{dashboardStats.confirmed}</span>
-              </div>
-              <div className="dashboard-stat-item pending">
-                <span className="stat-label">Pending</span>
-                <span className="stat-value">{dashboardStats.pending}</span>
-              </div>
-              <div className="dashboard-stat-item ignored">
-                <span className="stat-label">Request Ignored</span>
-                <span className="stat-value">{dashboardStats.ignored}</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-        {/* Right Main Content */}
-        <main className="pharmacy-dashboard-main">
-          <div className="buy-medicine-inner form-visible">
-            <h2 className="buy-medicine-title">Pharmacy Dashboard</h2>
-            
-            {/* Interactive Filter System */}
-            <div className="requests-filter-container">
-              <div className="filter-header">
-                <h3 className="filter-heading">Filter</h3>
-                <div className="filter-summary">
-                  <span className="summary-text">
-                    Showing {getFilteredRequests().length} of {requests.length} requests
-                  </span>
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="success-message" style={{
+          position: 'fixed',
+          top: '80px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#28a745',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '6px',
+          zIndex: 1000,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}>
+          {successMessage}
+        </div>
+      )}
+      
+      {/* Show loading state while auth is initializing */}
+      {authLoading && (
+        <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px' }}>
+          <p>Initializing dashboard...</p>
+        </div>
+      )}
+      
+      {/* Debug info - remove this after fixing */}
+      {!authLoading && (
+        <div style={{ 
+          position: 'fixed', 
+          top: '100px', 
+          right: '20px', 
+          backgroundColor: '#f8f9fa', 
+          padding: '10px', 
+          border: '1px solid #dee2e6', 
+          borderRadius: '5px', 
+          fontSize: '12px',
+          zIndex: 999
+        }}>
+          <div>Auth Loading: {authLoading.toString()}</div>
+          <div>Pharmacy: {pharmacy ? 'Yes' : 'No'}</div>
+          <div>Requests: {requests.length}</div>
+          <div>Loading: {loading.toString()}</div>
+        </div>
+      )}
+      
+      {/* Show dashboard when pharmacy is authenticated */}
+      {!authLoading && pharmacy && (
+        <div className="pharmacy-dashboard-container">
+          {/* Left Sidebar */}
+          <aside className="pharmacy-dashboard-sidebar">
+            <div className="pharmacy-profile-card">
+              <div className="pharmacy-avatar-area">
+                <div className="pharmacy-avatar-circle">
+                  {(pharmacyProfile?.pharmacyName || pharmacy?.pharmacyName || "P").charAt(0).toUpperCase()}
                 </div>
               </div>
-              <div className="filter-buttons">
-                <button 
-                  className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('all')}
-                >
-                  <span className="filter-label">Total Requests</span>
-                  <span className="filter-count">{getFilterCount('all')}</span>
-                </button>
-                
-                <button 
-                  className={`filter-btn ${activeFilter === 'pending' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('pending')}
-                >
-                  <span className="filter-label">Pending</span>
-                  <span className="filter-count">{getFilterCount('pending')}</span>
-                </button>
-                
-                <button 
-                  className={`filter-btn ${activeFilter === 'billGenerated' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('billGenerated')}
-                >
-                  <span className="filter-label">Bill Generated</span>
-                  <span className="filter-count">{getFilterCount('billGenerated')}</span>
-                </button>
-                
-                <button 
-                  className={`filter-btn ${activeFilter === 'orderConfirmed' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('orderConfirmed')}
-                >
-                  <span className="filter-label">Order Confirmed</span>
-                  <span className="filter-count">{getFilterCount('orderConfirmed')}</span>
-                </button>
-                
-                <button 
-                  className={`filter-btn ${activeFilter === 'requestIgnored' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('requestIgnored')}
-                >
-                  <span className="filter-label">Request Ignored</span>
-                  <span className="filter-count">{getFilterCount('requestIgnored')}</span>
-                </button>
+              <div className="pharmacy-profile-info">
+                <h3 className="pharmacy-name">{pharmacyProfile?.pharmacyName || pharmacy?.pharmacyName || "Pharmacy"}</h3>
+                <div className="pharmacy-meta"><span>Address:</span> {pharmacyProfile?.address || pharmacy?.address || "-"}</div>
+                <div className="pharmacy-meta"><span>Phone:</span> {pharmacyProfile?.phone || pharmacy?.phone || "-"}</div>
+                <div className="pharmacy-meta"><span>City:</span> {extractCityFromAddress(pharmacyProfile?.address || pharmacy?.address)}</div>
+                <div className="pharmacy-meta"><span>Email:</span> {pharmacyProfile?.email || pharmacy?.email || "-"}</div>
+                <div className="pharmacy-meta"><span>Licence:</span> {pharmacyProfile?.licence || pharmacyProfile?.licence || "-"}</div>
               </div>
             </div>
-
-            {authLoading && <div className="loading-msg">Initializing dashboard...</div>}
-            {!authLoading && loading && <div className="loading-msg">Loading requests...</div>}
-            {!authLoading && error && <div className="error-msg">{error}</div>}
-            {!authLoading && !loading && !error && getFilteredRequests().length === 0 && (
-              <div className="no-requests-message">
-                {activeFilter === 'all' ? 'No requests for your pharmacy yet.' : `No ${activeFilter.replace(/([A-Z])/g, ' $1').toLowerCase()} requests found.`}
-              </div>
-            )}
-            {!authLoading && !loading && getFilteredRequests().length > 0 && (
-              <div>
-                {getFilteredRequests().map((req, idx) => (
-                  <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 48 }}>
-                    {/* Left column: Customer data */}
-                    <div style={{ flex: 1, minWidth: 180 }}>
-                      <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>
-                      <div><b>City:</b> {req.city}</div>
-                      <div><b>Address:</b> {req.address}</div>
-                      <div><b>Phone:</b> {req.phone}</div>
-                      <div style={{ marginTop: '10px' }}>
-                        {req.status === 'pending' && (!req.bills || !req.bills.some(bill => bill.pharmacy._id.toString() === pharmacy._id.toString())) && (
-                          <button className="view-medicine-btn" onClick={() => handleViewMedicineList(req)}>
-                            View Medicine List
-                          </button>
-                        )}
-                        {req.status === 'accepted' && req.bill && (
-                          <button className="view-medicine-btn" onClick={() => openBillDetails(req.bill)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
-                            View Bill
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Right column: Basic request info */}
-                    <div style={{ flex: 2 }}>
-                      <div><b>Request ID:</b> {req._id}</div>
-                      <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
-                      <div><b>Total Medicines:</b> {req.medicines.length}</div>
-                      <div><b>Status:</b> <span style={{ color: getDisplayStatusColor(req), fontWeight: 'bold' }}>{getDisplayStatus(req)}</span></div>
-                    </div>
-
-                    {/* Left-bottom View button when bill is generated */}
-                    {req.bills && req.bills.some(bill => bill.pharmacy._id.toString() === pharmacy._id.toString()) && (
-                      <button 
-                        className="view-bill-btn"
-                        onClick={() => {
-                          const bill = req.bills.find(bill => bill.pharmacy._id.toString() === pharmacy._id.toString());
-                          if (bill) openBillDetails(bill._id);
-                        }}
-                      >
-                        View Bill
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Popups remain unchanged */}
-          {/* Medicine List Popup */}
-          {console.log('Popup state:', { showMedicinePopup, selectedRequest })}
-          {showMedicinePopup && selectedRequest && (
-            <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
-              <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
-                <div className="medicine-popup-header">
-                  <h3>
-                    {isBillGenerationMode ? 'Generate Bill' : 
-                     (selectedRequest.status === 'accepted' && selectedRequest.bill ? 'Bill Details' : 'Medicine List')}
-                  </h3>
-                  <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
+            <div className="pharmacy-dashboard-stats">
+              <h4>Dashboard Overview</h4>
+              <div className="dashboard-stats-list">
+                <div className="dashboard-stat-item total-requests">
+                  <span className="stat-label">Total Requests</span>
+                  <span className="stat-value">{dashboardStats.totalRequests}</span>
                 </div>
-                
-                <div className="medicine-popup-content">
-                  <div className="customer-info-section">
-                    <h4>Customer Information</h4>
-                    <div className="customer-details">
-                      <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
-                      <p><strong>Phone:</strong> {selectedRequest.phone}</p>
-                      <p><strong>City:</strong> {selectedRequest.city}</p>
-                      <p><strong>Address:</strong> {selectedRequest.address}</p>
-                      <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
-                    </div>
+                <div className="dashboard-stat-item bills-generated">
+                  <span className="stat-label">Bills Generated</span>
+                  <span className="stat-value">{dashboardStats.billsGenerated}</span>
+                </div>
+                <div className="dashboard-stat-item confirmed">
+                  <span className="stat-label">Offers Accepted</span>
+                  <span className="stat-value">{dashboardStats.confirmed}</span>
+                </div>
+                <div className="dashboard-stat-item pending">
+                  <span className="stat-label">Pending</span>
+                  <span className="stat-value">{dashboardStats.pending}</span>
+                </div>
+                <div className="dashboard-stat-item ignored">
+                  <span className="stat-label">Request Ignored</span>
+                  <span className="stat-value">{dashboardStats.ignored}</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+          {/* Right Main Content */}
+          <main className="pharmacy-dashboard-main">
+            <div className="buy-medicine-inner form-visible">
+              <h2 className="buy-medicine-title">Pharmacy Dashboard</h2>
+              
+              {/* Interactive Filter System */}
+              <div className="requests-filter-container">
+                <div className="filter-header">
+                  <h3 className="filter-heading">Filter</h3>
+                  <div className="filter-summary">
+                    <span className="summary-text">
+                      Showing {getFilteredRequests().length} of {requests.length} requests
+                    </span>
                   </div>
+                </div>
+                <div className="filter-buttons">
+                  <button className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
+                    <span className="filter-label">Total Requests</span>
+                    <span className="filter-count">{getFilterCount('all')}</span>
+                  </button>
+                  <button className={`filter-btn ${activeFilter === 'pending' ? 'active' : ''}`} onClick={() => setActiveFilter('pending')}>
+                    <span className="filter-label">Pending</span>
+                    <span className="filter-count">{getFilterCount('pending')}</span>
+                  </button>
+                  <button className={`filter-btn ${activeFilter === 'billGenerated' ? 'active' : ''}`} onClick={() => setActiveFilter('billGenerated')}>
+                    <span className="filter-label">Bill Generated</span>
+                    <span className="filter-count">{getFilterCount('billGenerated')}</span>
+                  </button>
+                  <button className={`filter-btn ${activeFilter === 'orderConfirmed' ? 'active' : ''}`} onClick={() => setActiveFilter('orderConfirmed')}>
+                    <span className="filter-label">Order Confirmed</span>
+                    <span className="filter-count">{getFilterCount('orderConfirmed')}</span>
+                  </button>
+                  <button className={`filter-btn ${activeFilter === 'requestIgnored' ? 'active' : ''}`} onClick={() => setActiveFilter('requestIgnored')}>
+                    <span className="filter-label">Request Ignored</span>
+                    <span className="filter-count">{getFilterCount('requestIgnored')}</span>
+                  </button>
+                </div>
+              </div>
 
-                  {!isBillGenerationMode ? (
-                    // Medicine List View
-                    <div className="medicine-list-section">
-                      <h4>Requested Medicines</h4>
-                      <div className="medicine-table-container">
-                        <table className="medicine-popup-table">
-                          <thead>
-                            <tr>
-                              <th>Medicine Name</th>
-                              <th>Type</th>
-                              <th>Strength/Dosage</th>
-                              <th>Quantity</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedRequest.medicines.map((med, i) => (
-                              <tr key={i}>
-                                <td>{med.name}</td>
-                                <td>{med.type || '-'}</td>
-                                <td>{med.strength || '-'}</td>
-                                <td>{med.quantity}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Show bill details if bill exists */}
-                      {selectedRequest.status === 'accepted' && selectedRequest.bill && (
-                        <div className="bill-details-section">
-                          <h4>Bill Summary</h4>
-                          {loadingBillDetails ? (
-                            <div style={{ textAlign: 'center', padding: '20px' }}>
-                              Loading bill details...
-                            </div>
-                          ) : billDetails ? (
-                            <>
-                              <div className="customer-details">
-                                <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
-                                <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
-                                <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
-                              </div>
-                              <div className="medicine-table-container">
-                                <h5>Medicine Prices</h5>
-                                <table className="medicine-popup-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Medicine Name</th>
-                                      <th>Quantity</th>
-                                      <th>Price per Unit</th>
-                                      <th>Total Price</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {(billDetails.medicines || []).map((med, i) => (
-                                      <tr key={i}>
-                                        <td>{med.name}</td>
-                                        <td>{med.quantity}</td>
-                                        <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
-                                        <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </>
-                          ) : (
-                            <div style={{ textAlign: 'center', padding: '20px', color: '#dc3545' }}>
-                              Failed to load bill details
-                            </div>
+              {loading && <div className="loading-msg">Loading requests...</div>}
+              {error && <div className="error-msg">{error}</div>}
+              {!loading && !error && getFilteredRequests().length === 0 && (
+                <div className="no-requests-message">
+                  {activeFilter === 'all' ? 'No requests for your pharmacy yet.' : `No ${activeFilter.replace(/([A-Z])/g, ' $1').toLowerCase()} requests found.`}
+                </div>
+              )}
+              {!loading && !error && getFilteredRequests().length > 0 && (
+                <div>
+                  {getFilteredRequests().map((req, idx) => (
+                    <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 48 }}>
+                      {/* Left column: Customer data */}
+                      <div style={{ flex: 1, minWidth: 180 }}>
+                        <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>
+                        <div><b>City:</b> {req.city}</div>
+                        <div><b>Address:</b> {req.address}</div>
+                        <div><b>Phone:</b> {req.phone}</div>
+                        <div style={{ marginTop: '10px' }}>
+                          {req.status === 'pending' && (!req.bills || !req.bills.some(bill => bill.pharmacy._id.toString() === pharmacy._id.toString())) && (
+                            <button className="view-medicine-btn" onClick={() => handleViewMedicineList(req)}>
+                              View Medicine List
+                            </button>
+                          )}
+                          {req.status === 'accepted' && req.bill && (
+                            <button className="view-medicine-btn" onClick={() => openBillDetails(req.bill)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>
+                              View Bill
+                            </button>
                           )}
                         </div>
+                      </div>
+                      {/* Right column: Basic request info */}
+                      <div style={{ flex: 2 }}>
+                        <div><b>Request ID:</b> {req._id}</div>
+                        <div><b>Date:</b> {new Date(req.createdAt).toLocaleDateString()}</div>
+                        <div><b>Total Medicines:</b> {req.medicines.length}</div>
+                        <div><b>Status:</b> <span style={{ color: getDisplayStatusColor(req), fontWeight: 'bold' }}>{getDisplayStatus(req)}</span></div>
+                      </div>
+                      {/* Left-bottom View button when bill is generated */}
+                      {req.bills && req.bills.some(bill => bill.pharmacy._id.toString() === pharmacy._id.toString()) && (
+                        <button 
+                          className="view-bill-btn"
+                          onClick={() => {
+                            const bill = req.bills.find(bill => bill.pharmacy._id.toString() === pharmacy._id.toString());
+                            if (bill) openBillDetails(bill._id);
+                          }}
+                        >
+                          View Bill
+                        </button>
                       )}
-
-                  <div className="popup-actions">
-                    <button 
-                      className="action-btn accept-btn" 
-                      onClick={handleAcceptRequest}
-                      disabled={submitting}
-                    >
-                      Accept Request
-                    </button>
-                    <button 
-                      className="action-btn reject-btn" 
-                      onClick={handleRejectRequest}
-                      disabled={submitting}
-                    >
-                      Reject Request
-                    </button>
-                    <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
-                  </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Show loading state during bill generation */}
+              {submitting && (
+                <div className="loading-msg" style={{ textAlign: 'center', padding: '20px' }}>
+                  Generating bill... Please wait.
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      )}
+      
+      {/* Medicine List Popup */}
+      {showMedicinePopup && selectedRequest && (
+        <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>
+          <div className="medicine-popup" onClick={e => e.stopPropagation()}>
+            <div className="medicine-popup-header">
+              <h3>
+                {isBillGenerationMode ? 'Generate Bill' :
+                  (selectedRequest.status === 'accepted' && selectedRequest.bill ? 'Bill Details' : 'Medicine List')}
+              </h3>
+              <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>
+            </div>
+            <div className="medicine-popup-content">
+              <div className="customer-info-section">
+                <h4>Customer Information</h4>
+                <div className="customer-details">
+                  <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
+                  <p><strong>Phone:</strong> {selectedRequest.phone}</p>
+                  <p><strong>City:</strong> {selectedRequest.city}</p>
+                  <p><strong>Address:</strong> {selectedRequest.address}</p>
+                  <p><strong>Request Date:</strong> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Bill Generation Form */}
-          {showBillForm && selectedRequest && (
-            <div className="medicine-popup-overlay" onClick={closeBillForm}>
-              <div className="medicine-popup bill-form-popup" onClick={(e) => e.stopPropagation()}>
-                <div className="medicine-popup-header">
-                  <h3>Generate Bill</h3>
-                  <button className="close-popup-btn" onClick={closeBillForm}>×</button>
-                </div>
-                
-                <div className="medicine-popup-content">
-                  <div className="customer-info-section">
-                    <h4>Customer Information</h4>
-                    <div className="customer-details">
-                      <p><strong>Name:</strong> {selectedRequest.customerName || selectedRequest.customer?.name || "N/A"}</p>
-                      <p><strong>Phone:</strong> {selectedRequest.phone}</p>
-                      <p><strong>Address:</strong> {selectedRequest.address}</p>
+              {!isBillGenerationMode ? (
+                <>
+                  <div className="medicine-list-section">
+                    <h4>Requested Medicines</h4>
+                    <div className="medicine-table-container">
+                      <table className="medicine-popup-table">
+                        <thead>
+                          <tr>
+                            <th>Medicine Name</th>
+                            <th>Type</th>
+                            <th>Strength/Dosage</th>
+                            <th>Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedRequest.medicines.map((med, i) => (
+                            <tr key={i}>
+                              <td>{med.name}</td>
+                              <td>{med.type || '-'}</td>
+                              <td>{med.strength || '-'}</td>
+                              <td>{med.quantity}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
+                    {/* Show bill details if bill exists */}
+                    {selectedRequest.status === 'accepted' && selectedRequest.bill && (
+                      <div className="bill-details-section">
+                        <h4>Bill Summary</h4>
+                        {loadingBillDetails ? (
+                          <div style={{ textAlign: 'center', padding: '20px' }}>
+                            Loading bill details...
+                          </div>
+                        ) : billDetails ? (
+                          <>
+                            <div className="customer-details">
+                              <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
+                              <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
+                              <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
+                            </div>
+                            <div className="medicine-table-container">
+                              <h5>Medicine Prices</h5>
+                              <table className="medicine-popup-table">
+                                <thead>
+                                  <tr>
+                                    <th>Medicine Name</th>
+                                    <th>Quantity</th>
+                                    <th>Price per Unit</th>
+                                    <th>Total Price</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(billDetails.medicines || []).map((med, i) => (
+                                    <tr key={i}>
+                                      <td>{med.name}</td>
+                                      <td>{med.quantity}</td>
+                                      <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
+                                      <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ textAlign: 'center', padding: '20px', color: '#dc3545' }}>
+                            Failed to load bill details
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-
+                  <div className="popup-actions">
+                    <button className="action-btn accept-btn" onClick={handleAcceptRequest} disabled={submitting}>Accept Request</button>
+                    <button className="action-btn reject-btn" onClick={handleRejectRequest} disabled={submitting}>Reject Request</button>
+                    <button className="action-btn close-btn" onClick={closeMedicinePopup}>Close</button>
+                  </div>
+                </>
+              ) : (
+                <>
                   <div className="bill-form-section">
                     <h4>Medicine Prices</h4>
                     <div className="medicine-table-container">
@@ -865,7 +902,7 @@ const PharmacyDashboard = () => {
                                   min="0"
                                   step="0.01"
                                   value={med.pricePerUnit || ''}
-                                  onChange={(e) => handlePriceChange(i, e.target.value)}
+                                  onChange={e => handlePriceChange(i, e.target.value)}
                                   className="price-input"
                                   placeholder="0.00"
                                 />
@@ -876,134 +913,143 @@ const PharmacyDashboard = () => {
                         </tbody>
                       </table>
                     </div>
-
-                      <div className="delivery-details">
-                        <h4>Delivery Details</h4>
-                        <div className="delivery-inputs">
-                          <div className="input-group">
-                            <label>Delivery Charges (₹):</label>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={billData.deliveryCharges || ''}
-                              onChange={(e) => setBillData({
-                                ...billData,
-                                deliveryCharges: parseFloat(e.target.value) || 0
-                              })}
-                              className="delivery-input"
-                              placeholder="0.00"
-                            />
-                          </div>
-                          <div className="input-group">
-                            <label>Delivery Time:</label>
-                            <input
-                              type="text"
-                              value={billData.deliveryTime}
-                              onChange={(e) => setBillData({
-                                ...billData,
-                                deliveryTime: e.target.value
-                              })}
-                              className="delivery-input"
-                              placeholder="e.g., 2-3 hours, Same day"
-                            />
-                          </div>
+                    <div className="delivery-details">
+                      <h4>Delivery Details</h4>
+                      <div className="delivery-inputs">
+                        <div className="input-group">
+                          <label>Delivery Charges (₹):</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={billData.deliveryCharges || ''}
+                            onChange={e => setBillData({ ...billData, deliveryCharges: parseFloat(e.target.value) || 0 })}
+                            className="delivery-input"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="input-group">
+                          <label>Delivery Time:</label>
+                          <input
+                            type="text"
+                            value={billData.deliveryTime}
+                            onChange={e => setBillData({ ...billData, deliveryTime: e.target.value })}
+                            className="delivery-input"
+                            placeholder="e.g., 2-3 hours, Same day"
+                          />
                         </div>
                       </div>
-
-                      <div className="bill-summary">
-                        <h4>Bill Summary</h4>
-                        <div className="summary-row">
-                          <span>Subtotal:</span>
-                          <span>₹{calculateSubtotal().toFixed(2)}</span>
-                        </div>
-                        <div className="summary-row">
-                          <span>Delivery Charges:</span>
-                          <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="summary-row total-row">
-                          <span><strong>Total Amount:</strong></span>
-                          <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
-                        </div>
-                      </div>
-
-                    <div className="popup-actions">
-                      <button 
-                        className="action-btn accept-btn" 
-                        onClick={handleSubmitBill}
-                        disabled={submitting}
-                      >
-                        {submitting ? 'Generating Bill...' : 'Generate Bill'}
-                      </button>
-                      <button className="action-btn close-btn" onClick={closeBillForm}>Cancel</button>
                     </div>
                   </div>
-                </div>
-              </div>
+                  <div className="bill-summary">
+                    <h4>Bill Summary</h4>
+                    <div className="summary-row">
+                      <span>Subtotal:</span>
+                      <span>₹{calculateSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div className="summary-row">
+                      <span>Delivery Charges:</span>
+                      <span>₹{(billData.deliveryCharges || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="summary-row total-row">
+                      <span><strong>Total Amount:</strong></span>
+                      <span><strong>₹{calculateTotal().toFixed(2)}</strong></span>
+                    </div>
+                  </div>
+                  <div className="popup-actions">
+                    <button className="action-btn accept-btn" onClick={handleSubmitBill} disabled={submitting}>
+                      {submitting ? 'Generating Bill...' : 'Generate Bill'}
+                    </button>
+                    <button className="action-btn close-btn" onClick={closeMedicinePopup}>Cancel</button>
+                  </div>
+                </>
+              )}
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Bill Details Popup */}
-          {showBillDetailsPopup && (
-            <div className="medicine-popup-overlay" onClick={closeBillDetails}>
-              <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>
-                <div className="medicine-popup-header">
-                  <h3>Bill Details</h3>
-                  <button className="close-popup-btn" onClick={closeBillDetails}>×</button>
-                </div>
-                <div className="medicine-popup-content">
-                  {loadingBillDetails && <div>Loading bill details...</div>}
-                  {!loadingBillDetails && billDetails && (
-                    <>
-                      <div className="customer-info-section">
-                        <h4>Summary</h4>
-                        <div className="customer-details">
-                          <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
-                          <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
-                          <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
-                          <p><strong>Status:</strong> {billDetails.status === 'accepted' ? 'Bill Generated' : (billDetails.status || '-')}</p>
-                        </div>
-                      </div>
-                      <div className="medicine-list-section">
-                        <h4>Medicines</h4>
-                        <div className="medicine-table-container">
-                          <table className="medicine-popup-table">
-                            <thead>
-                              <tr>
-                                <th>Medicine Name</th>
-                                <th>Type</th>
-                                <th>Strength</th>
-                                <th>Quantity</th>
-                                <th>Price per Unit</th>
-                                <th>Total Price</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(billDetails.medicines || []).map((med, i) => (
-                                <tr key={i}>
-                                  <td>{med.name}</td>
-                                  <td>{med.type || '-'}</td>
-                                  <td>{med.strength || '-'}</td>
-                                  <td>{med.quantity}</td>
-                                  <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
-                                  <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {!loadingBillDetails && !billDetails && (
-                    <div>Bill details not available.</div>
-                  )}
-                </div>
-              </div>
+      {/* Bill Details Popup */}
+      {showBillDetailsPopup && (
+        <div className="medicine-popup-overlay" onClick={closeBillDetails}>
+          <div className="medicine-popup" onClick={e => e.stopPropagation()}>
+            <div className="medicine-popup-header">
+              <h3>Bill Details</h3>
+              <button className="close-popup-btn" onClick={closeBillDetails}>×</button>
             </div>
-          )}
-        </main>
-      </div>
+            <div className="medicine-popup-content">
+              {loadingBillDetails && <div>Loading bill details...</div>}
+              {!loadingBillDetails && billDetails && (
+                <>
+                  <div className="customer-info-section">
+                    <h4>Summary</h4>
+                    <div className="customer-details">
+                      <p><strong>Delivery Time:</strong> {billDetails.deliveryTime || '-'}</p>
+                      <p><strong>Delivery Charges:</strong> ₹{Number(billDetails.deliveryCharges || 0).toFixed(2)}</p>
+                      <p><strong>Total Amount:</strong> ₹{Number(billDetails.totalAmount || 0).toFixed(2)}</p>
+                      <p><strong>Status:</strong> {billDetails.status === 'accepted' ? 'Bill Generated' : (billDetails.status || '-')}</p>
+                    </div>
+                  </div>
+                  <div className="medicine-list-section">
+                    <h4>Medicines</h4>
+                    <div className="medicine-table-container">
+                      <table className="medicine-popup-table">
+                        <thead>
+                          <tr>
+                            <th>Medicine Name</th>
+                            <th>Type</th>
+                            <th>Strength</th>
+                            <th>Quantity</th>
+                            <th>Price per Unit</th>
+                            <th>Total Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(billDetails.medicines || []).map((med, i) => (
+                            <tr key={i}>
+                              <td>{med.name}</td>
+                              <td>{med.type || '-'}</td>
+                              <td>{med.strength || '-'}</td>
+                              <td>{med.quantity}</td>
+                              <td>₹{Number(med.pricePerUnit || 0).toFixed(2)}</td>
+                              <td>₹{Number(med.totalPrice || 0).toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+              {!loadingBillDetails && !billDetails && (
+                <div>Bill details not available.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Fallback: Always show dashboard if we have requests data, even if pharmacy state is unclear */}
+      {!authLoading && !pharmacy && requests.length > 0 && (
+        <div className="pharmacy-dashboard-container">
+          <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px' }}>
+            <p>Dashboard data available. If you're experiencing issues, please refresh the page.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: '#007bff', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '5px', 
+                cursor: 'pointer' 
+              }}
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

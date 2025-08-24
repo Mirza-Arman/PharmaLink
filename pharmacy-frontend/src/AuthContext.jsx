@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -6,6 +7,7 @@ export function AuthProvider({ children }) {
   const [customer, setCustomer] = useState(null);
   const [pharmacy, setPharmacy] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Function to validate token and get user data
   const validateToken = async (token, userType) => {
@@ -99,6 +101,9 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("pharmacy_user");
     setCustomer(null);
     setPharmacy(null);
+    
+    // Navigate to home page after logout
+    navigate('/');
   };
 
   return (

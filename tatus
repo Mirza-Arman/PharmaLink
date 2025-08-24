@@ -1,0 +1,322 @@
+[1mdiff --git a/pharmacy-frontend/src/pages/PharmacyDashboard.jsx b/pharmacy-frontend/src/pages/PharmacyDashboard.jsx[m
+[1mindex 0097d39..3468be3 100644[m
+[1m--- a/pharmacy-frontend/src/pages/PharmacyDashboard.jsx[m
+[1m+++ b/pharmacy-frontend/src/pages/PharmacyDashboard.jsx[m
+[36m@@ -10,12 +10,13 @@[m [mconst PharmacyDashboard = () => {[m
+   const [error, setError] = useState("");[m
+   const [selectedRequest, setSelectedRequest] = useState(null);[m
+   const [showMedicinePopup, setShowMedicinePopup] = useState(false);[m
+[31m-  const [showBillForm, setShowBillForm] = useState(false);[m
+   const [billData, setBillData] = useState({ medicines: [], deliveryCharges: 0, deliveryTime: "" });[m
+   const [submitting, setSubmitting] = useState(false);[m
+   const [showBillDetailsPopup, setShowBillDetailsPopup] = useState(false);[m
+   const [billDetails, setBillDetails] = useState(null);[m
+   const [loadingBillDetails, setLoadingBillDetails] = useState(false);[m
+[32m+[m[32m  // New state to track if medicine popup is in bill generation mode[m
+[32m+[m[32m  const [isBillGenerationMode, setIsBillGenerationMode] = useState(false);[m
+   // New: Dashboard stats[m
+   const [dashboardStats, setDashboardStats] = useState({[m
+     totalRequests: 0,[m
+[36m@@ -57,6 +58,40 @@[m [mconst PharmacyDashboard = () => {[m
+     }[m
+   };[m
+ [m
+[32m+[m[32m  // Function to refresh requests data[m
+[32m+[m[32m  const refreshRequestsData = async () => {[m
+[32m+[m[32m    if (!pharmacy || !pharmacy._id) return;[m
+[32m+[m[41m    [m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const response = await fetch("http://localhost:5000/api/pharmacy/requests", {[m
+[32m+[m[32m        headers: {[m
+[32m+[m[32m          'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`[m
+[32m+[m[32m        }[m
+[32m+[m[32m      });[m
+[32m+[m[41m      [m
+[32m+[m[32m      if (response.ok) {[m
+[32m+[m[32m        const data = await response.json();[m
+[32m+[m[32m        console.log('Refreshed requests data:', data);[m
+[32m+[m[32m        const filtered = data.filter(req => req.selectedPharmacies && req.selectedPharmacies.includes(pharmacy._id));[m
+[32m+[m[32m        console.log('Refreshed filtered requests:', filtered);[m
+[32m+[m[32m        setRequests(filtered);[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Recalculate dashboard stats[m
+[32m+[m[32m        let totalRequests = filtered.length;[m
+[32m+[m[32m        let billsGenerated = 0, confirmed = 0, pending = 0, ignored = 0;[m
+[32m+[m[32m        filtered.forEach(req => {[m
+[32m+[m[32m          if (req.status === 'accepted') billsGenerated++;[m
+[32m+[m[32m          if (req.status === 'completed') confirmed++;[m
+[32m+[m[32m          if (req.status === 'pending') pending++;[m
+[32m+[m[32m          if (req.status === 'rejected') ignored++;[m
+[32m+[m[32m        });[m
+[32m+[m[32m        setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m      console.error('Failed to refresh requests data:', err);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+   // Function to filter requests based on active filter[m
+   const getFilteredRequests = () => {[m
+     if (activeFilter === 'all') return requests;[m
+[36m@@ -154,8 +189,14 @@[m [mconst PharmacyDashboard = () => {[m
+         'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}`[m
+       }[m
+     })[m
+[31m-      .then(res => res.json())[m
+[32m+[m[32m      .then(res => {[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m          throw new Error(`HTTP error! status: ${res.status}`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return res.json();[m
+[32m+[m[32m      })[m
+       .then(data => {[m
+[32m+[m[32m        console.log('Fetched requests data:', data);[m
+         // No need to filter since backend now returns only relevant requests[m
+         setRequests(data);[m
+         setLoading(false);[m
+[36m@@ -184,35 +225,73 @@[m [mconst PharmacyDashboard = () => {[m
+         console.log('Initial load - Dashboard stats calculated:', { totalRequests, billsGenerated, confirmed, pending, ignored });[m
+         setDashboardStats({ totalRequests, billsGenerated, confirmed, pending, ignored });[m
+       })[m
+[31m-      .catch(() => {[m
+[32m+[m[32m      .catch((error) => {[m
+[32m+[m[32m        console.error('Error fetching requests:', error);[m
+         setError("Failed to load requests.");[m
+         setLoading(false);[m
+       });[m
+   }, [pharmacy, authLoading]);[m
+[31m-[m
+[31m-  // Periodic refresh to keep dashboard updated[m
+[32m+[m[32m  // Refresh data when component mounts to ensure latest status[m
+   useEffect(() => {[m
+[31m-    if (!pharmacy || authLoading) return;[m
+[31m-    [m
+[31m-    const interval = setInterval(refreshRequests, 10000); // Refresh every 10 seconds[m
+[31m-    [m
+[31m-    return () => clearInterval(interval);[m
+[31m-  }, [pharmacy, authLoading]);[m
+[32m+[m[32m    if (!authLoading && pharmacy && pharmacy._id) {[m
+[32m+[m[32m      refreshRequestsData();[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }, [authLoading, pharmacy]);[m
+ [m
+   const handleViewMedicineList = (request) => {[m
+     console.log('Opening medicine list for request:', request);[m
+     setSelectedRequest(request);[m
+     setShowMedicinePopup(true);[m
+[32m+[m[32m    setIsBillGenerationMode(false); // Ensure it's not in bill generation mode[m
+[32m+[m[41m    [m
+[32m+[m[32m    // If request already has a bill generated, load bill details[m
+[32m+[m[32m    if (request.status === 'accepted' && request.bill) {[m
+[32m+[m[32m      loadBillDetailsForPopup(request.bill);[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const loadBillDetailsForPopup = async (billId) => {[m
+[32m+[m[32m    if (!billId) return;[m
+[32m+[m[32m    setLoadingBillDetails(true);[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const headers = { 'Authorization': `Bearer ${localStorage.getItem('pharmacy_token')}` };[m
+[32m+[m[32m      let res = await fetch(`http://localhost:5000/api/pharmacy/bills/${billId}`, { headers });[m
+[32m+[m[32m      if (!res.ok) {[m
+[32m+[m[32m        // Fallback if different route[m
+[32m+[m[32m        res = await fetch(`http://localhost:5000/api/bills/${billId}`, { headers });[m
+[32m+[m[32m      }[m
+[32m+[m[32m      if (res.ok) {[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m[32m        setBillDetails(data.bill || data);[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        setBillDetails(null);[m
+[32m+[m[32m        console.error('Failed to load bill details');[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } catch (e) {[m
+[32m+[m[32m      setBillDetails(null);[m
+[32m+[m[32m      console.error('Network error while loading bill details');[m
+[32m+[m[32m    } finally {[m
+[32m+[m[32m      setLoadingBillDetails(false);[m
+[32m+[m[32m    }[m
+   };[m
+ [m
+   const closeMedicinePopup = () => {[m
+     setShowMedicinePopup(false);[m
+     setSelectedRequest(null);[m
+[32m+[m[32m    setIsBillGenerationMode(false);[m
+[32m+[m[32m    setBillDetails(null); // Reset bill details when closing popup[m
+   };[m
+ [m
+   const handleAcceptRequest = () => {[m
+     if (!selectedRequest) return;[m
+     [m
+[32m+[m[32m    // Prevent accepting requests that already have bills[m
+[32m+[m[32m    if (selectedRequest.status === 'accepted' && selectedRequest.bill) {[m
+[32m+[m[32m      alert('Bill has already been generated for this request.');[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+     // Initialize bill data with medicines from request[m
+     const medicinesWithPrices = selectedRequest.medicines.map(med => ({[m
+       ...med,[m
+[36m@@ -225,13 +304,19 @@[m [mconst PharmacyDashboard = () => {[m
+       deliveryTime: ""[m
+     });[m
+     [m
+[31m-    setShowMedicinePopup(false);[m
+[31m-    setShowBillForm(true);[m
+[32m+[m[32m    // Transform the existing popup to bill generation mode instead of opening a new one[m
+[32m+[m[32m    setIsBillGenerationMode(true);[m
+   };[m
+ [m
+   const handleRejectRequest = async () => {[m
+     if (!selectedRequest) return;[m
+     [m
+[32m+[m[32m    // Prevent rejecting requests that already have bills[m
+[32m+[m[32m    if (selectedRequest.status === 'accepted' && selectedRequest.bill) {[m
+[32m+[m[32m      alert('Cannot reject a request that already has a bill generated.');[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+     setSubmitting(true);[m
+     try {[m
+       const response = await fetch(`http://localhost:5000/api/pharmacy/reject-request/${selectedRequest._id}`, {[m
+[36m@@ -251,6 +336,10 @@[m [mconst PharmacyDashboard = () => {[m
+         ));[m
+         closeMedicinePopup();[m
+         alert('Request rejected successfully');[m
+[32m+[m[32m        // Add a small delay before refreshing to ensure server has processed the update[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          refreshRequestsData(); // Refresh data to update status[m
+[32m+[m[32m        }, 1000);[m
+       } else {[m
+         const data = await response.json();[m
+         alert(data.message || 'Failed to reject request');[m
+[36m@@ -310,9 +399,8 @@[m [mconst PharmacyDashboard = () => {[m
+ [m
+       if (response.ok) {[m
+         const data = await response.json();[m
+[31m-        console.log('Bill generated successfully:', data);[m
+[31m-        console.log('Response data:', data);[m
+[31m-        console.log('Current requests state:', requests);[m
+[32m+[m[32m        console.log('Response data structure:', data);[m
+[32m+[m[32m        console.log('Bill ID from response:', data.bill?._id);[m
+         [m
+         // Update local state with the bills array to properly reflect bill generation status[m
+         setRequests(prev => {[m
+[36m@@ -329,15 +417,19 @@[m [mconst PharmacyDashboard = () => {[m
+           console.log('Updated requests state:', updated);[m
+           return updated;[m
+         });[m
+[31m-        setShowBillForm(false);[m
+[32m+[m[32m        setShowMedicinePopup(false);[m
+         setSelectedRequest(null);[m
+         setBillData({[m
+           medicines: [],[m
+           deliveryCharges: 0,[m
+           deliveryTime: ""[m
+         });[m
+[31m-        alert('Bill generated successfully! Waiting for customer to accept.');[m
+[31m-        refreshRequests(); // Refresh requests and update stats after successful bill generation[m
+[32m+[m[32m        setIsBillGenerationMode(false);[m
+[32m+[m[32m        alert('Request accepted and bill generated successfully!');[m
+[32m+[m[32m        // Add a small delay before refreshing to ensure server has processed the update[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          refreshRequestsData(); // Refresh data to update status[m
+[32m+[m[32m        }, 1000);[m
+       } else {[m
+         const errorData = await response.json();[m
+         console.error('Server error:', errorData);[m
+[36m@@ -382,16 +474,6 @@[m [mconst PharmacyDashboard = () => {[m
+     setBillDetails(null);[m
+   };[m
+ [m
+[31m-  const closeBillForm = () => {[m
+[31m-    setShowBillForm(false);[m
+[31m-    setSelectedRequest(null);[m
+[31m-    setBillData({[m
+[31m-      medicines: [],[m
+[31m-      deliveryCharges: 0,[m
+[31m-      deliveryTime: ""[m
+[31m-    });[m
+[31m-  };[m
+[31m-[m
+   const getStatusColor = (status) => {[m
+     switch (status) {[m
+       case 'pending': return '#007bff';[m
+[36m@@ -572,6 +654,11 @@[m [mconst PharmacyDashboard = () => {[m
+                             View Medicine List[m
+                           </button>[m
+                         )}[m
+[32m+[m[32m                        {req.status === 'accepted' && req.bill && ([m
+[32m+[m[32m                          <button className="view-medicine-btn" onClick={() => openBillDetails(req.bill)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>[m
+[32m+[m[32m                            View Bill[m
+[32m+[m[32m                          </button>[m
+[32m+[m[32m                        )}[m
+                       </div>[m
+                     </div>[m
+                     {/* Right column: Basic request info */}[m
+[36m@@ -606,7 +693,10 @@[m [mconst PharmacyDashboard = () => {[m
+             <div className="medicine-popup-overlay" onClick={closeMedicinePopup}>[m
+               <div className="medicine-popup" onClick={(e) => e.stopPropagation()}>[m
+                 <div className="medicine-popup-header">[m
+[31m-                  <h3>Medicine List</h3>[m
+[32m+[m[32m                  <h3>[m
+[32m+[m[32m                    {isBillGenerationMode ? 'Generate Bill' :[m[41m [m
+[32m+[m[32m                     (selectedRequest.status === 'accepted' && selectedRequest.bill ? 'Bill Details' : 'Medicine List')}[m
+[32m+[m[32m                  </h3>[m
+                   <button className="close-popup-btn" onClick={closeMedicinePopup}>×</button>[m
+                 </div>[m
+                 [m
+[36m@@ -622,173 +712,216 @@[m [mconst PharmacyDashboard = () => {[m
+                     </div>[m
+                   </div>[m
+ [m
+[31m-                  <div className="medicine-list-section">[m
+[31m-                    <h4>Requested Medicines</h4>[m
+[31m-                    <div className="medicine-table-container">[m
+[31m-                      <table className="medicine-popup-table">[m
+[31m-                        <thead>[m
+[31m-                          <tr>[m
+[31m-                            <th>Medicine Name</th>[m
+[31m-                            <th>Type</th>[m
+[31m-                            <th>Strength/Dosage</th>[m
+[31m-                            <th>Quantity</th>[m
+[31m-                          </tr>[m
+[31m-                        </thead>[m
+[31m-                        <tbody>[m
+[31m-                          {selectedRequest.medicines.map((med, i) => ([m
+[31m-                            <tr key={i}>[m
+[31m-                              <td>{med.name}</td>[m
+[31m-                              <td>{med.type || '-'}</td>[m
+[31m-                              <td>{med.strength || '-'}</td>[m
+[31m-                              <td>{med.quantity}</td>[m
+[32m+[m[32m                  {!isBillGenerationMode ? ([m
+[32m+[m[32m                    // Medicine List View[m
+[32m+[m[32m                    <div className="medicine-list-section">[m
+[32m+[m[32m                      <h4>Requested Medicines</h4>[m
+[32m+[m[32m                      <div className="medicine-table-container">[m
+[32m+[m[32m                        <table className="medicine-popup-table">[m
+[32m+[m[32m                          <thead>[m
+[32m+[m[32m                            <tr>[m
+[32m+[m[32m                              <th>Medicine Name</th>[m
+[32m+[m[32m                              <th>Type</th>[m
+[32m+[m[32m                              <th>Strength/Dosage</th>[m
+[32m+[m[32m                              <th>Quantity</th>[m
+                             </tr>[m
+[31m-                          ))}[m
+[31m-                        </tbody>[m
+[31m-                      </table>[m
+[31m-                    </div>[m
+[31m-                  </div>[m
+[31m-[m
+[31m-                  <div className="popup-actions">[m
+[31m-                    <button [m
+[31m-                      className="action-btn accept-btn" [m
+[31m-                      onClick={handleAcceptRequest}[m
+[31m-                      disabled={submitting}[m
+[31m-                    >[m
+[31m-                      Accept Request[m
+[31m-                    </button>[m
+[31m-                    <button [m
+[31m-                      className="action-btn reject-btn" [m
+[31m-                      onClick={handleRejectRequest}[m
+[31m-                      disabl
