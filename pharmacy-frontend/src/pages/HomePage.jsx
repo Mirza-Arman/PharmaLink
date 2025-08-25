@@ -76,7 +76,7 @@ const HomePage = () => {
             {/* Step 1 */}
             <div className="hiw-step">
               <div className="hiw-icon">
-                <img src={icons.meds} alt="Create Medicine List" />
+                <img src="/create%20medicine%20logo.svg" alt="Create Medicine List" />
               </div>
               <span className="hiw-number">1</span>
               <h3 className="hiw-heading">Create Medicine List</h3>
@@ -86,7 +86,7 @@ const HomePage = () => {
             {/* Step 2 */}
             <div className="hiw-step">
               <div className="hiw-icon">
-                <img src={icons.city} alt="Select City & Pharmacies" />
+                <img src="/ocation%20logo.svg" alt="Select City & Pharmacies" />
               </div>
               <span className="hiw-number">2</span>
               <h3 className="hiw-heading">Select City & Pharmacies</h3>
@@ -96,7 +96,7 @@ const HomePage = () => {
             {/* Step 3 */}
             <div className="hiw-step">
               <div className="hiw-icon">
-                <img src={icons.bids} alt="Receive Bids" />
+                <img src="/bid%20logo.svg" alt="Receive Bids" />
               </div>
               <span className="hiw-number">3</span>
               <h3 className="hiw-heading">Receive Bids</h3>
@@ -106,7 +106,7 @@ const HomePage = () => {
             {/* Step 4 */}
             <div className="hiw-step">
               <div className="hiw-icon">
-                <img src={icons.rider} alt="Confirm Order & Delivery" />
+                <img src="/delivery%20icon.svg" alt="Confirm Order & Delivery" />
               </div>
               <span className="hiw-number">4</span>
               <h3 className="hiw-heading">Confirm Order & Delivery</h3>
@@ -125,21 +125,14 @@ const HomePage = () => {
             {/* Card 1 */}
             <div className="feature-card">
               <div className="feature-icon" aria-hidden>
-                {/* Inline SVG: Bill/Receipt icon */}
-                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bill icon">
-                  <path d="M10 40h20.5c3.6 0 6.5-2.9 6.5-6.5V8" stroke="#1b5055" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M37 8v28c0 3.3-2.7 6-6 6H10V12c0-2.2 1.8-4 4-4h19" stroke="#1b5055" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M33 8c4.4 0 5 3 5 6" stroke="#1b5055" stroke-width="2.5" stroke-linecap="round"/>
-                  <rect x="19" y="14" width="10" height="10" rx="1.5" stroke="#1b5055" stroke-width="2.5"/>
-                  <path d="M15 29h18M15 34h18M15 24h2.5" stroke="#1b5055" stroke-width="2.5" stroke-linecap="round"/>
-                </svg>
+                <img src="/price%20compare%20logo.svg" alt="Price Comparison" />
               </div>
               <h3 className="feature-heading">Price Comparison</h3>
               <p className="feature-text">Compare medicine prices across multiple pharmacies to get the best deal.</p>
             </div>
             {/* Card 2 */}
             <div className="feature-card">
-              <div className="feature-icon"><img src={icons.realtime} alt="Real-time Availability" /></div>
+              <div className="feature-icon"><img src="/tick%20logo.svg" alt="Real-time Availability" /></div>
               <h3 className="feature-heading">Real-time Availability</h3>
               <p className="feature-text">Check instant availability of medicines across verified pharmacies.</p>
             </div>
