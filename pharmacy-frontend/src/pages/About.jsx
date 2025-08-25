@@ -107,13 +107,8 @@ const About = () => (
       <div className="features-grid">
         <div className="feature-card">
           <div className="feature-icon" aria-hidden>
-            {/* Medicine Availability - pills icon (monochrome) */}
-            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Medicine availability" width="44" height="44">
-              <rect x="6" y="22" width="18" height="12" rx="6"/>
-              <path d="M24 28H6"/>
-              <path d="M30 10a8 8 0 0 1 8 8v0a8 8 0 0 1-8 8h0a8 8 0 0 1-8-8v0a8 8 0 0 1 8-8Z"/>
-              <path d="M24 16l12 12"/>
-            </svg>
+            {/* Medicine Availability - pill logo from public */}
+            <img src="/pill%20logo.png" alt="Medicine availability" />
           </div>
           <h3>Medicine Availability</h3>
           <p>Real-time stock checking across multiple pharmacies</p>
@@ -136,12 +131,8 @@ const About = () => (
         </div>
         <div className="feature-card">
           <div className="feature-icon" aria-hidden>
-            {/* Secure Platform - shield/lock (monochrome) */}
-            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Secure platform" width="44" height="44">
-              <path d="M24 6l14 6v9c0 10-6.5 15-14 21-7.5-6-14-11-14-21v-9l14-6Z"/>
-              <rect x="18" y="20" width="12" height="10" rx="3"/>
-              <path d="M24 20v-2a3 3 0 0 1 3-3h0"/>
-            </svg>
+            {/* Secure Orders - match homepage icon */}
+            <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Secure Orders" />
           </div>
           <h3>Secure Platform</h3>
           <p>Your data and transactions are completely secure</p>
@@ -267,7 +258,7 @@ const About = () => (
           <div className="support-logo">MediLink</div>
           <h3>Need Help?</h3>
           <p>Our support team is available 24/7</p>
-          <button className="support-button">Email Support</button>
+          <Link to="/contact#send-message" className="support-button">Email Support</Link>
         </div>
       </section>
 

@@ -216,10 +216,11 @@ const HomePage = () => {
       <section className="support-section full-width-bg">
         <div className="support-bg" style={{backgroundImage: "url('https://images.unsplash.com/photo-1671108503276-1d3d5ab23a3a?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}} />
         <div className="support-content">
-          <div className="support-logo">MediLink</div>
+          
+          <div className="support-logo">PharmacyConnect</div>
           <h3>Need Help?</h3>
           <p>Our support team is available 24/7</p>
-          <button className="support-button">Email Support</button>
+          <Link to="/contact#send-message" className="support-button">Email Support</Link>
         </div>
       </section>
 
