@@ -9,7 +9,17 @@ const Footer = () => {
       <div className="footer-inner">
         <div className="footer-col footer-left">
           <div className="brand">
-            <img src={logo} alt="MediLink" className="brand-logo" />
+            <Link
+              to="/"
+              onClick={(e) => {
+                if (typeof window !== 'undefined' && window.location && window.location.pathname === '/') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+            >
+              <img src={logo} alt="MediLink" className="brand-logo" />
+            </Link>
           </div>
           <p className="brand-desc">
           We are your trusted link between customers and local pharmacies. With our platform, you can easily compare prices from different pharmacies, check if your required medicines are available, and place your order without any hassle. Our goal is to make buying medicines simple, convenient, and reliable so you can shop with confidence from the comfort of your home.
