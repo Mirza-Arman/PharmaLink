@@ -140,7 +140,7 @@ const About = () => (
         <div className="feature-card">
           <div className="feature-icon" aria-hidden>
             {/* Mobile Responsive - phone + monitor (monochrome) */}
-            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Mobile responsive" width="44" height="44">
+            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Mobile responsive" width="68" height="68">
               <rect x="6" y="10" width="28" height="18" rx="2"/>
               <path d="M14 32h12"/>
               <rect x="32" y="22" width="10" height="16" rx="2"/>
