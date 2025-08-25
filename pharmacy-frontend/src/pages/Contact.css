@@ -46,10 +46,6 @@
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* Makes text visible on image */
   margin-bottom: 40px;
 }
-.contact-hero-content h1:hover {
-  transform: scale(1.05) translateY(-3px);
-  font-size: 3.8rem;
-}
 
 .contact-hero-content p {
   
@@ -122,7 +118,7 @@
 /* Form */
 .contact-form-section {
   margin: 0.5rem 0 0 0;
-  margin-bottom: 50px !important;
+  margin-bottom: 2rem;
 }
 .form-wrapper {
   background: #fff;
@@ -133,21 +129,30 @@
   border: 1.5px solid #e0f2f1;
   box-shadow: 0 2px 12px rgba(44, 167, 160, 0.08);
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
+  grid-template-columns: 1fr 1fr;
   overflow: hidden;
+  max-height: 600px;
 }
 .form-visual {
   position: relative;
   background: #eaf7f6;
+  display: flex;
+  align-items: stretch;
+  max-height: 600px;
 }
 .form-visual img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  max-height: 600px;
 }
 .form-content {
   padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 600px;
 }
 .form-wrapper h2 {
   text-align: center;
