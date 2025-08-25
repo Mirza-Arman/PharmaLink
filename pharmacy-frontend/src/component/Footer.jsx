@@ -66,7 +66,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© {new Date().getFullYear()} PharmacyConnect</div>
+      <div className="footer-bottom">© {new Date().getFullYear()} MediLink</div>
     </footer>
   );
 };

@@ -124,7 +124,7 @@ const Contact = () => {
       <section className="contact-form-section full-width-section">
         <div className="form-wrapper">
           <div className="form-visual">
-            <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf" alt="Contact" />
+             <img src="/Contact%201.avif" alt="Contact" />
           </div>
           <div className="form-content">
             <h2>Send us a message</h2>
