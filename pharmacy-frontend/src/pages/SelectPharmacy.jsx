@@ -130,6 +130,11 @@ const SelectPharmacy = () => {
                     phone: location.state?.phone || "",
                     city: city,
                     selectedPharmacies,
+                    // Keep names in the exact same order as selectedPharmacies to match indices on the server/UI
+                    pharmacyNames: selectedPharmacies.map(id => {
+                      const p = pharmacies.find(ph => ph._id === id);
+                      return p ? p.pharmacyName : 'Pharmacy';
+                    }),
                     customer: customer?._id || null,
                     customerName: location.state?.customerName || customer?.email || ""
                   };

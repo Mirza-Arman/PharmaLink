@@ -586,7 +586,7 @@ const PharmacyDashboard = () => {
             {!authLoading && !loading && getFilteredRequests().length > 0 && (
               <div>
                 {getFilteredRequests().map((req, idx) => (
-                  <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 48 }}>
+                  <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 32 }}>
                     {/* Left column: Customer data */}
                     <div style={{ flex: 1, minWidth: 180 }}>
                       <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>
@@ -597,6 +597,8 @@ const PharmacyDashboard = () => {
                         {(() => {
                           const myBill = getMyBill(req);
                           const isConfirmed = req?.status === 'accepted' && req?.acceptedBy?.toString() === pharmacy?._id?.toString();
+                          const isRejected = req.status === 'rejected';
+                          const isIgnored = req.status === 'accepted' && req.acceptedBy && req.acceptedBy.toString() !== pharmacy?._id?.toString();
                           // If my bill exists (pending) or order confirmed for me => show View Bill
                           if ((req.status === 'pending' && myBill) || isConfirmed) {
                             const billId = myBill?._id || req?.bill; // fallback if present
@@ -615,7 +617,19 @@ const PharmacyDashboard = () => {
                               </button>
                             );
                           }
-                          // If accepted for another pharmacy (offer ignored) or rejected => no action
+                          // If accepted for another pharmacy (offer ignored) or rejected => show Delete here (same area as View Bill)
+                          if (isRejected || isIgnored) {
+                            return (
+                              <button
+                                className="view-medicine-btn"
+                                onClick={() => handleDeleteRequest(req._id, req.customerName || req.customer?.name || 'Customer')}
+                                disabled={deletingRequest === req._id}
+                                style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}
+                              >
+                                {deletingRequest === req._id ? 'Deleting...' : 'Delete Request'}
+                              </button>
+                            );
+                          }
                           return null;
                         })()}
                       </div>
@@ -627,27 +641,28 @@ const PharmacyDashboard = () => {
                       {(() => { const s = getDisplayStatus(req); return (
                         <div><b>Status:</b> <span style={{ color: s.color, fontWeight: 'bold' }}>{s.label}</span></div>
                       ); })()}
+                      {(() => {
+                        const isAcceptedMine = req?.status === 'accepted' && req?.acceptedBy?.toString() === pharmacy?._id?.toString();
+                        const isIgnored = req?.status === 'accepted' && req?.acceptedBy && req?.acceptedBy?.toString() !== pharmacy?._id?.toString();
+                        if (isAcceptedMine) {
+                          return (
+                            <div style={{ background: '#e3f7e6', color: '#1976d2', borderRadius: 8, padding: '16px 14px 10px', marginTop: 12, fontWeight: 600, fontSize: 14, border: '2px solid #1976d2' }}>
+                              Order Confirmed! Customer accepted your offer.
+                            </div>
+                          );
+                        }
+                        if (isIgnored) {
+                          return (
+                            <div style={{ background: '#f5f5f5', color: '#bdbdbd', borderRadius: 8, padding: '16px 14px 10px', marginTop: 12, fontWeight: 600, fontSize: 14, border: '2px solid #bdbdbd' }}>
+                              This offer was ignored as customer accepted another pharmacy's offer.
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
-                    {/* Bottom-left button removed to avoid duplication; use the left-column action only */}
-                    {(() => {
-                      // Only show delete button for rejected or ignored requests
-                      const isRejected = req.status === 'rejected';
-                      const isIgnored = req.status === 'accepted' && req.acceptedBy && req.acceptedBy.toString() !== pharmacy?._id?.toString();
-                      
-                      if (isRejected || isIgnored) {
-                        return (
-                          <button 
-                            className="delete-request-btn"
-                            onClick={() => handleDeleteRequest(req._id, req.customerName || req.customer?.name || "Customer")}
-                            disabled={deletingRequest === req._id}
-                          >
-                            {deletingRequest === req._id ? 'Deleting...' : 'Delete Request'}
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()}
+                    {/* Delete button handled in left action area for ignored/rejected states */}
                   </div>
                 ))}
               </div>

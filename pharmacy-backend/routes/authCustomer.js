@@ -14,6 +14,7 @@ router.post('/login', login);
 router.post('/request', async (req, res) => {
   try {
     const { medicines, address, phone, city, selectedPharmacies, customerName } = req.body;
+    let { pharmacyNames } = req.body;
 
     let customerId = req.body.customer || null;
     // If not provided, try to extract from Authorization header
@@ -42,6 +43,27 @@ router.post('/request', async (req, res) => {
       customer: customerId
     });
     
+    // Ensure pharmacyNames is aligned and present
+    try {
+      if (!Array.isArray(pharmacyNames) || pharmacyNames.length !== (Array.isArray(selectedPharmacies) ? selectedPharmacies.length : 0)) {
+        const Pharmacy = require('../models/Pharmacy');
+        const list = Array.isArray(selectedPharmacies) ? selectedPharmacies : [];
+        if (list.length > 0) {
+          const docs = await Pharmacy.find({ _id: { $in: list } }, 'pharmacyName');
+          // Map names in the same order as selectedPharmacies
+          pharmacyNames = list.map(id => {
+            const doc = docs.find(d => d._id.toString() === id.toString());
+            return doc ? doc.pharmacyName : 'Pharmacy';
+          });
+        } else {
+          pharmacyNames = [];
+        }
+      }
+    } catch (e) {
+      // Fallback: keep existing value or empty
+      pharmacyNames = Array.isArray(pharmacyNames) ? pharmacyNames : [];
+    }
+
     const request = new Request({
       medicines,
       customerName,
@@ -49,8 +71,10 @@ router.post('/request', async (req, res) => {
       phone,
       city,
       selectedPharmacies,
+      pharmacyNames,
       customer: customerId // can be null for guest
     });
+    
     await request.save();
     res.status(201).json({ message: 'Request created', request });
   } catch (err) {
@@ -85,7 +109,29 @@ router.put('/profile', auth('customer'), async (req, res) => {
 router.get('/requests', auth('customer'), async (req, res) => {
   try {
     const requests = await Request.find({ customer: req.user.id }).sort({ createdAt: -1 });
-    res.json(requests);
+
+    // Ensure pharmacyNames present in response for legacy records
+    const enhanced = [];
+    for (const r of requests) {
+      let obj = r.toObject();
+      const list = Array.isArray(obj.selectedPharmacies) ? obj.selectedPharmacies : [];
+      const names = Array.isArray(obj.pharmacyNames) ? obj.pharmacyNames : [];
+      if (list.length > 0 && names.length !== list.length) {
+        try {
+          const Pharmacy = require('../models/Pharmacy');
+          const docs = await Pharmacy.find({ _id: { $in: list } }, 'pharmacyName');
+          obj.pharmacyNames = list.map(id => {
+            const d = docs.find(x => x._id.toString() === id.toString());
+            return d ? d.pharmacyName : 'Pharmacy';
+          });
+        } catch (e) {
+          obj.pharmacyNames = names; // fallback to existing
+        }
+      }
+      enhanced.push(obj);
+    }
+
+    res.json(enhanced);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

@@ -163,7 +163,12 @@ const UserRequests = () => {
                           // Determine status text and color
                           let statusText = 'Response Pending';
                           let statusColor = '#ff9800';
-                          if (response) {
+                          // Rejected if pharmacy explicitly declined or bill marked rejected
+                          const isRejected = (Array.isArray(req.rejectedPharmacies) && req.rejectedPharmacies.includes(pharmacyId)) || (response && response.status === 'rejected');
+                          if (isRejected && !acceptedBill) {
+                            statusText = 'Rejected';
+                            statusColor = '#d32f2f';
+                          } else if (response) {
                             if (acceptedBill) {
                               if (acceptedBill.pharmacyId === pharmacyId) {
                                 statusText = 'Order Confirmed';
@@ -323,6 +328,7 @@ const UserRequests = () => {
               // Find if any offer is accepted for this request
               const pharmacyResponses = getPharmacyResponses(requests.find(r => r._id === selectedRequestId));
               const acceptedBill = pharmacyResponses.find(bill => bill.status === 'accepted' || bill.status === 'completed');
+              const isRejected = selectedPharmacyBill && selectedPharmacyBill.status === 'rejected';
               const isAccepted = acceptedBill && acceptedBill.billId === selectedPharmacyBill.billId;
               const isIgnored = acceptedBill && acceptedBill.billId !== selectedPharmacyBill.billId;
               return (
@@ -387,9 +393,13 @@ const UserRequests = () => {
                     <div style={{ background: '#f5f5f5', color: '#bdbdbd', borderRadius: 8, padding: '18px 20px', marginBottom: 12, fontWeight: 600, fontSize: 17, textAlign: 'center', border: '2px solid #bdbdbd' }}>
                       <span>This offer was ignored as you accepted another pharmacy's offer.</span>
                     </div>
+                  ) : isRejected ? (
+                    <div style={{ background: '#fdecea', color: '#d32f2f', borderRadius: 8, padding: '18px 20px', marginBottom: 12, fontWeight: 600, fontSize: 17, textAlign: 'center', border: '2px solid #d32f2f' }}>
+                      <span>This pharmacy has rejected your request.</span>
+                    </div>
                   ) : null}
                   {/* Show action buttons only if not ignored or accepted */}
-                  {!isAccepted && !isIgnored && (
+                  {!isAccepted && !isIgnored && !isRejected && (
                     <div style={{ display: 'flex', gap: 20, marginTop: 12 }}>
                       <button className="action-btn accept-response-btn" style={{ fontSize: 16, padding: '12px 28px' }} onClick={() => handleAcceptOffer(selectedPharmacyBill.billId)}>
                         Accept Offer
