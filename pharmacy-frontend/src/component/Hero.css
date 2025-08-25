@@ -43,7 +43,57 @@
 .site-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient( to right, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.80) 40%, rgba(255,255,255,0.70) 100% );
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.60) 0%,
+    rgba(0, 0, 0, 0.55) 25%,
+    rgba(0, 0, 0, 0.45) 40%,
+    rgba(0, 0, 0, 0.20) 55%,
+    rgba(0, 0, 0, 0.00) 70%
+  );
+}
+
+/* Full-bleed style when overlay is used over a background image */
+.site-hero.has-overlay {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+}
+
+/* Improve contrast on dark overlay */
+.site-hero.has-overlay .site-hero-content {
+  color: #ffffff;
+  /* Constrain content like the no-overlay background case */
+  flex: 0 1 50%;
+  max-width: 50%;
+  padding-left: 2rem;
+}
+.site-hero.has-overlay .animated-gradient {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #ffffff;
+}
+.site-hero.has-overlay .site-hero-title {
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+}
+.site-hero.has-overlay .site-hero-subtitle {
+  color: #eef6f7;
+  text-shadow: 0 1.5px 6px rgba(0,0,0,0.45);
+}
+.site-hero.has-overlay .site-hero-bullets li { color: #e8f4f5; }
+.site-hero.has-overlay .site-hero-btn.primary {
+  background: linear-gradient(135deg, #2ca7a0 0%, #3bb2a9 100%);
+  color: #fff;
+  border: 1px solid #2ca7a0;
+}
+.site-hero.has-overlay .site-hero-btn.secondary {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0b2a30;
+  border: 1px solid rgba(255, 255, 255, 0.95);
 }
 
 .site-hero-illustration {
@@ -237,14 +287,45 @@
     flex-basis: 70%;
     max-width: 70%;
   }
+  /* When overlay is active, allow more width on tablet */
+  .site-hero.has-overlay .site-hero-content {
+    flex-basis: 70%;
+    max-width: 70%;
+    padding-left: 0;
+    text-align: left;
+  }
 }
 
 @media (max-width: 700px) {
+  .site-hero {
+    height: auto;
+    min-height: 70vh;
+    padding: 1.25rem;
+    margin: 0; /* full-bleed on small screens */
+  }
   .site-hero-image { max-height: 260px; }
   .site-hero-title { font-size: 1.5rem; }
   .site-hero-subtitle { font-size: 1rem; }
-  .site-hero.has-bg-no-overlay .site-hero-content {
+  .site-hero-content { padding-right: 0; }
+  .site-hero.has-bg-no-overlay .site-hero-content,
+  .site-hero.has-overlay .site-hero-content {
     flex-basis: 100%;
     max-width: 100%;
+    padding-left: 0.25rem;
+    text-align: left;
+  }
+  .site-hero-bullets { grid-template-columns: 1fr; }
+  .site-hero-bullets li { font-size: 0.95rem; padding-left: 1.4rem; }
+  .site-hero-ctas { flex-direction: column; }
+  .site-hero-btn { width: 100%; }
+  /* Make overlay cover more on small screens for readability */
+  .site-hero-overlay {
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.62) 0%,
+      rgba(0, 0, 0, 0.52) 40%,
+      rgba(0, 0, 0, 0.28) 65%,
+      rgba(0, 0, 0, 0.00) 100%
+    );
   }
 }

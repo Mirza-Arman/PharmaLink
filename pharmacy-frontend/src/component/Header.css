@@ -1,7 +1,8 @@
 /* Header Styles */
 .header {
   width: 100vw;
-  background: linear-gradient(90deg, #2ca7a0 0%, #3bb2a9 100%);
+  /* translucent glass gradient */
+  background: linear-gradient(90deg, rgba(44,167,160,0.55) 0%, rgba(59,178,169,0.55) 100%);
   color: #fff;
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -13,7 +14,16 @@
   left: 0;
   right: 0;
   margin: 0;
+  /* stronger elevation to blend with hero below */
+  box-shadow: 0 6px 24px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.12);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.25);
 }
+
+/* Show login on desktop in right corner, hide mobile login */
+.login-desktop { display: inline-flex; }
+.login-mobile { display: none; }
 
 .logo-area {
   display: flex;
@@ -53,6 +63,36 @@
   justify-self: end;
 }
 
+/* Hamburger toggle - hidden on desktop, shown on mobile */
+.menu-toggle {
+  display: none;
+  width: 42px;
+  height: 36px;
+  margin-left: 0.6rem;
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.menu-toggle:hover { background: rgba(255,255,255,0.22); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+.menu-toggle:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(0,0,0,0.16); }
+.menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.menu-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-toggle.open span:nth-child(2) { opacity: 0; }
+.menu-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
 .nav-center a, .nav-right a {
   color: #fff;
   text-decoration: none;
@@ -61,12 +101,56 @@
   padding: 0.3rem 0.7rem;
   border-radius: 20px;
   transition: background 0.18s, color 0.18s;
+  position: relative;
 }
 
-.nav-center a:hover, .nav-right a:hover {
-  background: #fff;
-  color: #2ca7a0;
+.nav-center a::after, .nav-right a::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem;
+  right: 0.6rem;
+  bottom: -4px;
+  height: 2px;
+  background: rgba(255,255,255,0.9);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
 }
+
+.nav-center a:hover, .nav-right a:hover { color: #0b2a30; background: #fff; }
+.nav-center a:hover::after, .nav-right a:hover::after { transform: scaleX(1); background: #2ca7a0; }
+
+/* Modern Login box button */
+.login-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.48rem 0.9rem;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.login-box:hover {
+  background: #ffffff;
+  color: #2ca7a0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+.login-box:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+}
+
+/* Desktop vs Mobile login visibility (placed AFTER .login-box to win on display) */
+.login-box.login-desktop { display: inline-flex; }
+.login-box.login-mobile { display: none !important; }
 
 .user-info {
   color: #fff;
@@ -294,8 +378,36 @@
 @media (max-width: 768px) {
   .header {
     padding: 1rem 1.5rem;
+    background: linear-gradient(180deg, rgba(44,167,160,0.75) 0%, rgba(59,178,169,0.75) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.18);
   }
-  
+  .menu-toggle { display: inline-flex; }
+  /* Collapse center nav into dropdown panel */
+  .nav-center {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.8rem 1rem 1rem 1rem;
+    background: linear-gradient(180deg, rgba(44,167,160,0.92) 0%, rgba(59,178,169,0.92) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.18);
+    z-index: 9;
+  }
+  .nav-center.open { display: flex; }
+
+  /* Swap login visibility on mobile */
+  .login-box.login-desktop { display: none !important; }
+  .login-box.login-mobile { display: inline-flex !important; }
+
   .logo-area {
     gap: 0.5rem;
   }

@@ -9,6 +9,7 @@ const Header = () => {
   const { customer, pharmacy, logout } = useAuth();
   const [gravatarUrl, setGravatarUrl] = useState(null);
   const [showLetter, setShowLetter] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Generate Gravatar URL when pharmacy changes
   useEffect(() => {
@@ -31,18 +32,30 @@ const Header = () => {
       <div className="logo-area">
         <img src={logo} alt="PharmacyConnect" className="header-logo" />
       </div>
-      <nav className="nav-center">
+      <nav id="primary-navigation" className={`nav-center${mobileOpen ? " open" : ""}`}>
         <Link to="/">Home</Link>
         <a href="#faq">FAQs</a>
         <Link to="/contact">Contact</Link>
         <Link to="/about">About</Link>
         <a href="#features">Features</a>
+        {!customer && !pharmacy && (
+          <Link to="/login" className="login-box login-mobile">Login</Link>
+        )}
       </nav>
       <div className="nav-right">
+        <button
+          className={`menu-toggle${mobileOpen ? " open" : ""}`}
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
+          aria-controls="primary-navigation"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         {!customer && !pharmacy && (
-          <>
-            <Link to="/login">Login</Link>
-          </>
+          <Link to="/login" className="login-box login-desktop">Login</Link>
         )}
         {customer && (
           <div className="customer-dropdown">

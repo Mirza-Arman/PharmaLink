@@ -32,7 +32,7 @@ const Hero = ({
   overlay = false,
 }) => {
   const hasBgNoOverlay = Boolean(bgImageSrc) && !overlay;
-  const sectionClass = `site-hero ${align}${hasBgNoOverlay ? " has-bg-no-overlay" : ""}`;
+  const sectionClass = `site-hero ${align}${hasBgNoOverlay ? " has-bg-no-overlay" : ""}${overlay ? " has-overlay" : ""}`;
   return (
     <section className={sectionClass}>
       {bgImageSrc && (

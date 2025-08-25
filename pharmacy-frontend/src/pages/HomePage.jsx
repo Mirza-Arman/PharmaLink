@@ -57,6 +57,7 @@ const HomePage = () => {
         align="image-left"
         imageSrc={null}
         bgImageSrc="/hero-pharmacy.jpg"
+        overlay={true}
         bulletPoints={[
           "Real-time availability",
           "Compare prices across pharmacies",
