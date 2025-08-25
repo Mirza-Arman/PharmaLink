@@ -39,10 +39,11 @@ const Header = () => {
         <a href="#features">Features</a>
       </nav>
       <div className="nav-right">
-        {!customer && !pharmacy && <>
-          <Link to="/customer-auth">Customer Login</Link>
-          <Link to="/pharmacy-auth">Pharmacy Login</Link>
-        </>}
+        {!customer && !pharmacy && (
+          <>
+            <Link to="/login">Login</Link>
+          </>
+        )}
         {customer && (
           <div className="customer-dropdown">
             <div className="customer-avatar">

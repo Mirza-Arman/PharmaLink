@@ -13,6 +13,7 @@ import Footer from "./component/Footer";
 import Contact from "./pages/Contact";
 import TestPopup from "./pages/TestPopup";
 import About from "./pages/About";
+import LoginChoice from "./pages/LoginChoice";
 
 function App() {
   return ( 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/buy-medicine" element={<BuyMedicine />} />
+          <Route path="/login" element={<LoginChoice />} />
           <Route path="/customer-auth" element={<CustomerAuth />} />
           <Route path="/pharmacy-auth" element={<PharmacyAuth />} />
           <Route path="/select-pharmacy" element={<SelectPharmacy />} />

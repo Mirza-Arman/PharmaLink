@@ -1,0 +1,142 @@
+/* Login Choice Page Styles */
+.login-choice-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f7fbfb;
+}
+
+.choice-hero {
+  padding: 3rem 1.5rem 1rem;
+  text-align: center;
+}
+
+.choice-hero h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  color: #164a4d;
+}
+
+.choice-hero p {
+  margin-top: 0.5rem;
+  color: #3a6a6d;
+}
+
+.choice-grid {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.choice-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.6rem;
+  box-shadow: 0 6px 20px rgba(16, 112, 110, 0.12);
+  border: 1px solid rgba(44, 167, 160, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.choice-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 60% at 100% 0%, rgba(44,167,160,0.08), transparent 60%);
+  pointer-events: none;
+}
+
+.choice-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(16, 112, 110, 0.18);
+}
+
+.card-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #e7f6f5;
+  color: #2c7e78;
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+}
+
+.choice-card h2 {
+  margin: 0 0 0.5rem;
+  color: #104244;
+}
+
+.choice-card p {
+  margin: 0 0 1.2rem;
+  color: #4a6b6d;
+  line-height: 1.6;
+}
+
+.card-actions {
+  margin-top: 0.5rem;
+}
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease, color 0.2s ease;
+}
+
+.btn.primary {
+  background: #2ca7a0;
+  color: white;
+}
+
+.btn.primary:hover { background: #238f89; }
+
+.btn.secondary {
+  background: #104a4d;
+  color: white;
+}
+
+.btn.secondary:hover { background: #0c3a3c; }
+
+/* Themed accents */
+.choice-card.customer { border-top: 6px solid #2ca7a0; }
+.choice-card.pharmacy { border-top: 6px solid #104a4d; }
+
+/* Two-column feature lists */
+.features-list {
+  list-style: none;
+  margin: 0.6rem 0 0.2rem;
+  padding: 0;
+  color: #2a4f51;
+}
+
+.features-list.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.features-list li {
+  background: #f3fbfb;
+  border: 1px solid rgba(44, 167, 160, 0.12);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+  .features-list.two-col {
+    grid-template-columns: 1fr;
+  }
+}
