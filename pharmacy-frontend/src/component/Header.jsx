@@ -30,7 +30,9 @@ const Header = () => {
   return (
     <header className="header">
       <div className="logo-area">
-        <img src={logo} alt="PharmacyConnect" className="header-logo" />
+        <Link to="/">
+          <img src={logo} alt="PharmacyConnect" className="header-logo" />
+        </Link>
       </div>
       <nav id="primary-navigation" className={`nav-center${mobileOpen ? " open" : ""}`}>
         <Link to="/">Home</Link>
