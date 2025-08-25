@@ -9,11 +9,10 @@ const Footer = () => {
       <div className="footer-inner">
         <div className="footer-col footer-left">
           <div className="brand">
-            <img src={logo} alt="PharmacyConnect" className="brand-logo" />
+            <img src={logo} alt="MediLink" className="brand-logo" />
           </div>
           <p className="brand-desc">
-            Your trusted bridge between customers and local pharmacies. Compare prices,
-            check availability, and order with confidence.
+          We are your trusted link between customers and local pharmacies. With our platform, you can easily compare prices from different pharmacies, check if your required medicines are available, and place your order without any hassle. Our goal is to make buying medicines simple, convenient, and reliable so you can shop with confidence from the comfort of your home.
           </p>
         </div>
 

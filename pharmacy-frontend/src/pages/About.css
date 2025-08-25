@@ -12,6 +12,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
+  margin-top: -45px;
   color: #23424a;
 }
 
@@ -229,19 +230,34 @@
 }
 
 .feature-card {
-  background: white;
+  background: white; /* default white */
   padding: 2rem;
   border-radius: 16px;
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  color: #23424a; /* default text color */
 }
 
 .feature-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  background: #2CA7A0; /* hover bg */
+  color: #ffffff; /* make text white */
 }
+
+/* Ensure headings and paragraphs inherit hover color */
+.feature-card h3 { color: #23424a; }
+.feature-card p { color: #666; }
+.feature-card:hover h3,
+.feature-card:hover p { color: #ffffff; }
+
+/* Icon treatment on hover: keep icons unchanged */
+.feature-card .feature-icon img { filter: none; transition: none; }
+.feature-card:hover .feature-icon img { filter: none; }
+.feature-card .feature-icon svg { stroke: #111; transition: none; }
+.feature-card:hover .feature-icon svg { stroke: #111; }
 
 .feature-card.primary {
   background: #2ca7a0;

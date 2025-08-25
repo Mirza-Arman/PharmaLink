@@ -29,8 +29,11 @@
   margin-bottom: 0.6rem;
 }
 .brand-logo {
-  width: 50px;
-  height: 50px;
+  width: 200px;
+  height: 80px;
+  filter: brightness(0) invert(1);
+  
+
   object-fit: contain;
   transition: transform 0.2s ease;
 }
@@ -51,6 +54,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  align-items: flex-start; /* prevent children from stretching full width */
 }
 .links-list a {
   color: #ffffff;
@@ -58,6 +62,8 @@
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
   transition: background 0.18s ease, color 0.18s ease;
+  display: inline-flex; /* shrink to content */
+  align-items: center;
 }
 .links-list a:hover {
   background: #2ca7a0;
@@ -68,15 +74,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  align-items: flex-start; /* prevent stretch */
 }
 .social-item {
-  display: inline-flex;
+  display: inline-flex; /* shrink to content */
   align-items: center;
   gap: 0.5rem;
   color: #ffffff;
   text-decoration: none;
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
+  align-self: flex-start; /* ensure no stretching */
 }
 .social-item:hover {
   background: #2ca7a0;

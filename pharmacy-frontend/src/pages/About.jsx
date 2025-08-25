@@ -71,19 +71,19 @@ const About = () => (
         <div className="about-timeline-right">
           <div className="timeline">
             <div className="timeline-item">
-              <div className="timeline-year">2024</div>
+              <div className="timeline-year">June 2024</div>
               <div className="timeline-label">Foundation & Vision</div>
             </div>
             <div className="timeline-item">
-              <div className="timeline-year">2024</div>
+              <div className="timeline-year"> SEP 2024</div>
               <div className="timeline-label">Platform Development</div>
             </div>
             <div className="timeline-item">
-              <div className="timeline-year">2025</div>
+              <div className="timeline-year">Feb 2025</div>
               <div className="timeline-label">Beta Launch</div>
             </div>
             <div className="timeline-item">
-              <div className="timeline-year">2025</div>
+              <div className="timeline-year">Aug2025</div>
               <div className="timeline-label">Full Launch</div>
             </div>
           </div>
@@ -105,33 +105,71 @@ const About = () => (
         Thoughtful <span className="highlight">Healthcare Solutions</span>
       </h2>
       <div className="features-grid">
-        <div className="feature-card primary">
-          <div className="feature-icon">💊</div>
+        <div className="feature-card">
+          <div className="feature-icon" aria-hidden>
+            {/* Medicine Availability - pills icon (monochrome) */}
+            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Medicine availability" width="44" height="44">
+              <rect x="6" y="22" width="18" height="12" rx="6"/>
+              <path d="M24 28H6"/>
+              <path d="M30 10a8 8 0 0 1 8 8v0a8 8 0 0 1-8 8h0a8 8 0 0 1-8-8v0a8 8 0 0 1 8-8Z"/>
+              <path d="M24 16l12 12"/>
+            </svg>
+          </div>
           <h3>Medicine Availability</h3>
           <p>Real-time stock checking across multiple pharmacies</p>
         </div>
         <div className="feature-card">
-          <div className="feature-icon">💰</div>
+          <div className="feature-icon" aria-hidden>
+            {/* Price Comparison - from public assets */}
+            <img src="/price%20compare%20logo.svg" alt="Price comparison" />
+          </div>
           <h3>Price Comparison</h3>
           <p>Compare prices and choose the best deal</p>
         </div>
         <div className="feature-card">
-          <div className="feature-icon">🚚</div>
+          <div className="feature-icon" aria-hidden>
+            {/* Fast Delivery - from public assets */}
+            <img src="/delivery%20icon.svg" alt="Fast delivery" />
+          </div>
           <h3>Fast Delivery</h3>
           <p>Quick delivery with secure payment options</p>
         </div>
         <div className="feature-card">
-          <div className="feature-icon">🛡️</div>
+          <div className="feature-icon" aria-hidden>
+            {/* Secure Platform - shield/lock (monochrome) */}
+            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Secure platform" width="44" height="44">
+              <path d="M24 6l14 6v9c0 10-6.5 15-14 21-7.5-6-14-11-14-21v-9l14-6Z"/>
+              <rect x="18" y="20" width="12" height="10" rx="3"/>
+              <path d="M24 20v-2a3 3 0 0 1 3-3h0"/>
+            </svg>
+          </div>
           <h3>Secure Platform</h3>
           <p>Your data and transactions are completely secure</p>
         </div>
         <div className="feature-card">
-          <div className="feature-icon">📱</div>
+          <div className="feature-icon" aria-hidden>
+            {/* Mobile Responsive - phone + monitor (monochrome) */}
+            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Mobile responsive" width="44" height="44">
+              <rect x="6" y="10" width="28" height="18" rx="2"/>
+              <path d="M14 32h12"/>
+              <rect x="32" y="22" width="10" height="16" rx="2"/>
+              <path d="M37 22v-2"/>
+            </svg>
+          </div>
           <h3>Mobile Responsive Website</h3>
           <p>Order medicines on-the-go with our mobile responsive website</p>
         </div>
         <div className="feature-card">
-          <div className="feature-icon">🏥</div>
+          <div className="feature-icon" aria-hidden>
+            {/* Pharmacy Network - storefront with cross (monochrome) */}
+            <svg viewBox="0 0 48 48" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Pharmacy network" width="44" height="44">
+              <path d="M8 20l2-8h28l2 8"/>
+              <path d="M10 20h28v18H10z"/>
+              <path d="M20 30h8"/>
+              <path d="M24 26v8"/>
+              <path d="M18 20v-4h12v4"/>
+            </svg>
+          </div>
           <h3>Pharmacy Network</h3>
           <p>Access to trusted local pharmacies nationwide</p>
         </div>
@@ -195,13 +233,13 @@ const About = () => (
       <div className="about-team-container">
         <div className="about-team-left">
           <h2 className="about-section-title">
-            Crafting <span className="highlight">Healthcare Solutions</span> That Inspire
+          Meet the Minds,  <span className="highlight">  Behind Our </span> Innovation:
           </h2>
           <p className="about-section-desc">
-            Our team of dedicated professionals works tirelessly to ensure that every aspect of our platform serves our users' needs. From development to customer support, we're committed to excellence in everything we do.
+          Our team of skilled and <b>dedicated professionals</b> works hard to give our users the best experience possible. We use the latest technology and smart practices to design and improve every part of our platform so it runs smoothly, stays secure, and is easy to use. From building strong systems and simple designs to offering quick customer support and regular updates, we make sure everything meets the needs of our users. Our goal is to provide a reliable, innovative, and high-quality platform that goes beyond expectations.
           </p>
           <div className="about-team-buttons">
-            <Link to="/" className="about-btn primary">Get Started</Link>
+            {/* <Link to="/" className="about-btn primary">Get Started</Link> */}
             <Link to="/contact" className="about-btn secondary">Contact Us</Link>
           </div>
         </div>
@@ -223,31 +261,17 @@ const About = () => (
       </div>
     </section>
 
-    {/* Why Choose Us Section */}
-    <section className="about-why-choose-section">
-      <div className="about-why-choose-container">
-        <div className="about-why-choose-left">
-          <h2 className="about-section-title">
-            Why <span className="highlight">Choose MediLink?</span>
-          </h2>
-          <div className="why-choose-list">
-            {whyChooseUs.map((reason, i) => (
-              <div key={i} className="why-choose-item">
-                <div className="why-choose-icon">✓</div>
-                <p>{reason}</p>
-              </div>
-            ))}
-          </div>
+    <section className="support-section full-width-bg">
+        <div className="support-bg" style={{backgroundImage: "url('https://images.unsplash.com/photo-1671108503276-1d3d5ab23a3a?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}} />
+        <div className="support-content">
+          <div className="support-logo">MediLink</div>
+          <h3>Need Help?</h3>
+          <p>Our support team is available 24/7</p>
+          <button className="support-button">Email Support</button>
         </div>
-        <div className="about-why-choose-right">
-          <img 
-            src="https://images.unsplash.com/photo-1698466632366-09fa1d925de6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cGhhcm1hY3klMjBwaWN0dXJlc3xlbnwwfHwwfHx8MA%3D%3D" 
-            alt="Why Choose Us" 
-            className="why-choose-image"
-          />
-        </div>
-      </div>
-    </section>
+      </section>
+
+  
   </div>
 );
 

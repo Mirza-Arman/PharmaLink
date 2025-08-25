@@ -116,6 +116,46 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Trusted Pharmacy Partners - Inserted between How It Works and Key Features */}
+      <section className="home-partners-section" id="partners">
+        <h2 className="partners-title">Trusted <span className="highlight">Pharmacy Partners</span></h2>
+        <p className="partners-subtitle">Partnering with leading pharmacies across the nation to ensure quality healthcare for everyone</p>
+        <div className="partners-grid">
+          <div className="partner-logo">
+            <span className="partner-name">MediCare</span>
+            <span className="partner-tag">Premium</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">HealthPlus</span>
+            <span className="partner-tag">24/7</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">PharmaCare</span>
+            <span className="partner-tag">Trusted</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">WellnessRx</span>
+            <span className="partner-tag">Quality</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">CarePharm</span>
+            <span className="partner-tag">Reliable</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">LifeRx</span>
+            <span className="partner-tag">Fast</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">HealthFirst</span>
+            <span className="partner-tag">Expert</span>
+          </div>
+          <div className="partner-logo">
+            <span className="partner-name">MediLink</span>
+            <span className="partner-tag">Innovative</span>
+          </div>
+        </div>
+      </section>
+
       {/* Key Features - Modern cards */}
       <section className="features-modern full-width-section" id="features">
         <div className="features-inner">
@@ -176,7 +216,7 @@ const HomePage = () => {
       <section className="support-section full-width-bg">
         <div className="support-bg" style={{backgroundImage: "url('https://images.unsplash.com/photo-1671108503276-1d3d5ab23a3a?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}} />
         <div className="support-content">
-          <div className="support-logo">PharmacyConnect</div>
+          <div className="support-logo">MediLink</div>
           <h3>Need Help?</h3>
           <p>Our support team is available 24/7</p>
           <button className="support-button">Email Support</button>

@@ -17,7 +17,8 @@ const PharmacyAuth = () => {
     pharmacyName: "",
     address: "",
     city: "",
-    licence: ""
+    licence: "",
+    phone: ""
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -189,6 +190,21 @@ const PharmacyAuth = () => {
                     placeholder="Licence Number"
                     value={form.licence}
                     onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-section">
+                  <label className="form-label" htmlFor="phone">Phone Number</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    className="form-input"
+                    type="tel"
+                    placeholder="03XXXXXXXXX"
+                    value={form.phone}
+                    onChange={handleChange}
+                    pattern="03[0-9]{9}"
+                    title="Please enter a valid Pakistani phone number starting with 03"
                     required
                   />
                 </div>
