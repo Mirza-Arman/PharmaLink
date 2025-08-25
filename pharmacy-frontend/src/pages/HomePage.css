@@ -789,3 +789,216 @@ html, body {
 @media (max-width: 640px) {
   .partners-grid { padding-left: 0.5rem; padding-right: 0.5rem; }
 }
+
+/* About Team Section Styles - Copied from About.css for consistency */
+.about-team-section {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-team-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #2ca7a0, transparent);
+}
+
+.about-team-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.about-team-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.team-member-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-member-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(44, 167, 160, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.team-member-item:hover::before {
+  left: 100%;
+}
+
+.team-member-item:hover {
+  transform: translateX(15px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(44, 167, 160, 0.2);
+  border-color: #2ca7a0;
+}
+
+.team-member-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 4px solid #e9ecef;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-member-item:hover .team-member-avatar {
+  border-color: #2ca7a0;
+  box-shadow: 0 8px 25px rgba(44, 167, 160, 0.3);
+  transform: scale(1.05);
+}
+
+.team-member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.team-member-item:hover .team-member-avatar img {
+  transform: scale(1.1);
+}
+
+.team-member-info {
+  flex: 1;
+}
+
+.team-member-name {
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  font-weight: 800;
+  color: #23424a;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+}
+
+.team-member-item:hover .team-member-name {
+  color: #2ca7a0;
+}
+
+.team-member-role {
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
+  background: #f8f9fa;
+  border-radius: 20px;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.team-member-item:hover .team-member-role {
+  background: #2ca7a0;
+  color: white;
+}
+
+/* About section title and description styles */
+.about-section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #23424a;
+}
+
+.about-section-title .highlight {
+  color: #2ca7a0;
+}
+
+.about-section-desc {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.about-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.about-btn.secondary {
+  background: transparent;
+  color: #2ca7a0;
+  border-color: #2ca7a0;
+}
+
+.about-btn.secondary:hover {
+  background: #2ca7a0;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Responsive design for team section */
+@media (max-width: 768px) {
+  .about-team-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+  
+  .about-team-buttons {
+    justify-content: center;
+  }
+  
+  .team-member-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .team-member-avatar {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .about-section-title {
+    font-size: 2rem;
+  }
+}

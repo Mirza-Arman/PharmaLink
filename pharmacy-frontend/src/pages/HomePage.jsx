@@ -27,7 +27,7 @@ const faqs = [
   {
     icon: 'pill',
     question: "How do I order medicines?",
-    answer: "Start by selecting your city so we can show pharmacies that serve your area. Next, add the medicines you need (tablet, syrup, or capsule) and specify quantities or upload a prescription if required. Submit your request and nearby pharmacies will respond with prices, stock availability, and estimated delivery times. You can compare offers side‑by‑side, chat or ask for clarification if needed, and then confirm the pharmacy that best fits your budget and timing. Once confirmed, you’ll receive order updates and a delivery ETA.",
+    answer: "Start by selecting your city so we can show pharmacies that serve your area. Next, add the medicines you need (tablet, syrup, or capsule) and specify quantities or upload a prescription if required. Submit your request and nearby pharmacies will respond with prices, stock availability, and estimated delivery times. You can compare offers side‑by‑side, chat or ask for clarification if needed, and then confirm the pharmacy that best fits your budget and timing. Once confirmed, you'll receive order updates and a delivery ETA.",
   },
   {
     icon: 'secure',
@@ -37,8 +37,14 @@ const faqs = [
   {
     icon: 'truck',
     question: "How fast is delivery?",
-    answer: "Most orders are fulfilled within a few hours on the same day, depending on stock and your location. Each pharmacy includes an estimated delivery window in its offer, along with any delivery fee. After you confirm an order, you’ll see real‑time status updates and can contact the pharmacy or rider if needed. For urgent needs, look for offers marked ‘express’ with faster delivery slots.",
+    answer: "Most orders are fulfilled within a few hours on the same day, depending on stock and your location. Each pharmacy includes an estimated delivery window in its offer, along with any delivery fee. After you confirm an order, you'll see real‑time status updates and can contact the pharmacy or rider if needed. For urgent needs, look for offers marked 'express' with faster delivery slots.",
   },
+];
+
+const team = [
+  { name: "Arman Ejaz", role: "Backend & Database Developer", img: "/Arman.jpeg" },
+  { name: "Ali Hassan", role: "Frontend Developer", img: "/ali.jpg" },
+  { name: "Sikandar Aftab", role: "Market Research & Analyst", img: "/sikander.jpeg" },
 ];
 
 const HomePage = () => {
@@ -186,6 +192,40 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* About Team Section */}
+      <section className="about-team-section full-width-section" id="team">
+        <div className="about-team-container">
+          <div className="about-team-left">
+            <h2 className="about-section-title">
+              Meet the Minds, <span className="highlight">Behind Our</span> Innovation:
+            </h2>
+            <p className="about-section-desc">
+              Our team of skilled and <b>dedicated professionals</b> works hard to give our users the best experience possible. We use the latest technology and smart practices to design and improve every part of our platform so it runs smoothly, stays secure, and is easy to use. From building strong systems and simple designs to offering quick customer support and regular updates, we make sure everything meets the needs of our users. Our goal is to provide a reliable, innovative, and high-quality platform that goes beyond expectations.
+            </p>
+            <div className="about-team-buttons">
+              <Link to="/contact" className="about-btn secondary">Contact Us</Link>
+            </div>
+          </div>
+          <div className="about-team-right">
+            <div className="team-list">
+              {team.map((member, i) => (
+                <div key={i} className="team-member-item">
+                  <div className="team-member-avatar">
+                    <img src={member.img} alt={member.name} />
+                  </div>
+                  <div className="team-member-info">
+                    <div className="team-member-name">{member.name}</div>
+                    <div className="team-member-role">{member.role}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
 
       {/* FAQs - Modern Accordion */}
       <section className="faqs-modern full-width-section" id="faq">
