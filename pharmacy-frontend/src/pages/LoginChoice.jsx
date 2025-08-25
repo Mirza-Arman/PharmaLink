@@ -18,14 +18,13 @@ const LoginChoice = () => {
           <div className="card-badge">For Customers</div>
           <h2>Order Medicines Easily</h2>
           <p>
-            Browse pharmacies, upload prescriptions, track orders, and get
-            timely reminders. Simple, secure, and fast.
+          You can browse pharmacies, upload prescriptions, and track your orders easily. Get timely reminders so you never miss a dose. Everything is simple, secure, and fast for your convenience.
           </p>
           <ul className="features-list two-col">
             <li>Browse medicine catalog</li>
-            <li>💰 Compare prices</li>
-            <li>🚚 Fast delivery</li>
-            <li>🛡️ Secure payments</li>
+            <li> Compare prices</li>
+            <li> Fast delivery</li>
+            <li> Secure payments</li>
           </ul>
           <div className="card-actions">
             <Link to="/customer-auth" className="btn primary">
@@ -38,14 +37,13 @@ const LoginChoice = () => {
           <div className="card-badge">For Pharmacies</div>
           <h2>Manage Your Pharmacy</h2>
           <p>
-            Accept orders, manage inventory, view analytics, and grow your
-            business with MediLink's powerful tools.
+          Easily accept orders, and track detailed analytics with MediLink. Powerful tools to simplify daily operations and grow your business faster.
           </p>
           <ul className="features-list two-col">
             <li>Manage inventory</li>
-            <li>📱 Customer requests</li>
-            <li>📊 Analytics dashboard</li>
-            <li>💼 Business growth</li>
+            <li> Customer requests</li>
+            <li> Analytics dashboard</li>
+            <li> Business growth</li>
           </ul>
           <div className="card-actions">
             <Link to="/pharmacy-auth" className="btn secondary">
