@@ -489,6 +489,10 @@
   border: 4px solid #e9ecef;
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .team-member-item:hover .team-member-avatar {
@@ -501,7 +505,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
   transition: transform 0.3s ease;
+  display: block;
 }
 
 .team-member-item:hover .team-member-avatar img {

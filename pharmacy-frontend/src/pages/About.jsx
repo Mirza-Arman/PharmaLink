@@ -4,9 +4,9 @@ import Header from "../component/Header";
 import "./About.css";
 
 const team = [
-  { name: "Arman Ejaz", role: "Backend & Database Developer", img: "https://randomuser.me/api/portraits/men/46.jpg" },
+  { name: "Arman Ejaz", role: "Backend & Database Developer", img: "/Arman.jpeg" },
   { name: "Ali Hassan", role: "Frontend Developer", img: "/ali.jpg" },
-  { name: "Sikandar Aftab", role: "Market Research & Analyst", img: "https://randomuser.me/api/portraits/women/47.jpg" },
+  { name: "Sikandar Aftab", role: "Market Research & Analyst", img: "/sikander.jpeg" },
 ];
 
 const features = [
