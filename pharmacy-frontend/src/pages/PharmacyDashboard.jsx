@@ -586,7 +586,7 @@ const PharmacyDashboard = () => {
             {!authLoading && !loading && getFilteredRequests().length > 0 && (
               <div>
                 {getFilteredRequests().map((req, idx) => (
-                  <div className="pharmacy-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 32 }}>
+                  <div className="pharmacy-card dashboard-request-card" key={req._id || idx} style={{ display: 'flex', flexDirection: 'row', gap: 24, marginBottom: 24, position: 'relative', paddingBottom: 32 }}>
                     {/* Left column: Customer data */}
                     <div style={{ flex: 1, minWidth: 180 }}>
                       <div><b>Customer:</b> {req.customerName || req.customer?.name || "N/A"}</div>

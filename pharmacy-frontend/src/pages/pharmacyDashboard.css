@@ -337,6 +337,19 @@
   margin: 2rem 0;
 }
 
+/* Dashboard Request Card layout */
+.dashboard-request-card {
+  display: flex;
+}
+
+@media (max-width: 700px) {
+  .dashboard-request-card {
+    flex-direction: column;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+  }
+}
+
 /* View Bill Button */
 .view-bill-btn {
   position: absolute;

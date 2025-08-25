@@ -1,6 +1,6 @@
 .buy-medicine-bg {
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   background: linear-gradient(120deg, #eaf7f6 60%, #b2f0e6 100%), url('https://images.unsplash.com/photo-1588776814546-ec7e5b1c7b6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
+  width: 100%;
   min-height: 80vh;
 }
 
@@ -1204,8 +1204,9 @@ textarea {
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 10px 16px;
+  padding: 8px 16px;
   font-size: 14px;
+  line-height: 1.2;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s;

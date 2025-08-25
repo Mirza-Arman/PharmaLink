@@ -1,6 +1,6 @@
 /* Header Styles */
 .header {
-  width: 100vw;
+  width: 100%;
   /* translucent glass gradient */
   background: linear-gradient(90deg, rgba(44,167,160,0.55) 0%, rgba(59,178,169,0.55) 100%);
   color: #fff;
@@ -35,8 +35,9 @@
 }
 
 .header-logo {
-  height: 50px;
-  width: 200px;
+  height: auto;
+  width: auto;
+  max-width: 180px;
   filter: brightness(0) invert(1);
   transition: transform 0.2s ease;
 }
@@ -412,9 +413,7 @@
     gap: 0.5rem;
   }
   
-  .header-logo {
-    height: 48px;
-  }
+  .header-logo { max-width: 150px; }
   
   .logo-text {
     font-size: 1.4rem;
@@ -475,6 +474,10 @@
     padding: 0.6rem 0.8rem;
     font-size: 0.95rem;
   }
+}
+@media (max-width: 480px) {
+  .header { padding: 0.8rem 1rem; }
+  .header-logo { max-width: 130px; }
 }
 /* Customer Dropdown Styles */
 .customer-dropdown {

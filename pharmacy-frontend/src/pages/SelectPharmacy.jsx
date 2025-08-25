@@ -67,6 +67,7 @@ const SelectPharmacy = () => {
                   return (
                     <div
                       key={pharmacy._id}
+                      className="pharmacy-select-card"
                       style={{
                         display: 'flex',
                         alignItems: 'stretch',
@@ -77,7 +78,6 @@ const SelectPharmacy = () => {
                         padding: '18px 28px',
                         boxShadow: isSelected ? '0 2px 12px #b2f0e6' : 'none',
                         transition: 'all 0.18s cubic-bezier(.4,1.4,.6,1)',
-                        position: 'relative',
                         minHeight: 110
                       }}
                     >
@@ -88,10 +88,8 @@ const SelectPharmacy = () => {
                         <div style={{ fontSize: 15, color: '#333' }}><b>Email:</b> {pharmacy.email || 'N/A'}</div>
                       </div>
                       <button
+                        className="select-toggle-btn"
                         style={{
-                          position: 'absolute',
-                          right: 28,
-                          bottom: 18,
                           background: isSelected ? '#888' : '#2ca7a0',
                           color: '#fff',
                           border: 'none',

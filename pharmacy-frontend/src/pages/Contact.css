@@ -7,7 +7,7 @@
 
 .full-width-bg,
 .full-width-section {
-  width: 100vw;
+  width: 100%;
   position: relative;
   left: 0;
   right: 0;
@@ -231,6 +231,20 @@
   .contact-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .form-wrapper { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .contact-hero { height: auto; padding-top: 72px; }
+  .contact-hero-content { padding: 2rem 1rem; }
+  .contact-hero-content h1 { font-size: 2.2rem; margin-bottom: 20px; }
+  .contact-hero-content h1:hover { transform: none; font-size: 2.2rem; }
+  .contact-hero-content p { font-size: 1rem; max-width: 90%; margin: 0 auto; }
+}
+
+@media (max-width: 480px) {
+  .contact-hero { padding-top: 64px; }
+  .contact-hero-content { padding: 1.6rem 0.8rem; }
+  .contact-hero-content h1 { font-size: 1.8rem; }
 }
 
 
