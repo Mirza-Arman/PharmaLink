@@ -69,9 +69,7 @@ const SelectPharmacy = () => {
                       key={pharmacy._id}
                       className="pharmacy-select-card"
                       style={{
-                        display: 'flex',
-                        alignItems: 'stretch',
-                        justifyContent: 'space-between',
+                        position: 'relative',
                         background: isSelected ? '#eaf7f6' : '#fff',
                         border: '1.5px solid #2ca7a0',
                         borderRadius: 10,
@@ -90,14 +88,18 @@ const SelectPharmacy = () => {
                       <button
                         className="select-toggle-btn"
                         style={{
+                          position: 'absolute',
+                          bottom: '18px',
+                          right: '28px',
                           background: isSelected ? '#888' : '#2ca7a0',
                           color: '#fff',
                           border: 'none',
                           borderRadius: 6,
-                          padding: '10px 28px',
+                          padding: '8px 20px',
                           fontWeight: 700,
-                          fontSize: 16,
-                          minWidth: 120,
+                          fontSize: 14,
+                          height: 36,
+                          width: 100,
                           cursor: 'pointer',
                           transition: 'background 0.2s',
                           boxShadow: '0 2px 8px rgba(44,167,160,0.08)'
